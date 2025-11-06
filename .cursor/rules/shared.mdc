@@ -5,7 +5,7 @@ alwaysApply: true
 ---
 # AI Rules for {app-name}
 
-{project-description}
+Projekt 10x-cards ma na celu umożliwienie użytkownikom szybkiego tworzenia i zarządzania zestawami fiszek edukacyjnych. Aplikacja wykorzystuje modele LLM (poprzez API) do generowania sugestii fiszek na podstawie dostarczonego tekstu.
 
 ## Tech Stack
 
