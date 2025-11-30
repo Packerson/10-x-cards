@@ -22,9 +22,9 @@ Manualne tworzenie wysokiej jakości fiszek wymaga dużych nakładów czasu i wy
    - Rejestracja i logowanie.
    - Możliwość usunięcia konta i powiązanych fiszek na życzenie.
 
-4. Integracja z algorytmem powtórek:
-   - Zapewnienie mechanizmu przypisywania fiszek do harmonogramu powtórek (korzystanie z gotowego algorytmu).
-   - Brak dodatkowych metadanych i zaawansowanych funkcji powiadomień w MVP.
+4. Integracja z algorytmem powtórek (poza MVP):
+   - Funkcjonalność sesji nauki opartej na spaced-repetition zostanie dodana w kolejnych iteracjach.
+   - Wersja MVP skupia się wyłącznie na generowaniu, edycji i zarządzaniu fiszkami.
 
 5. Przechowywanie i skalowalność:
    - Dane o fiszkach i użytkownikach przechowywane w sposób zapewniający skalowalność i bezpieczeństwo.
@@ -106,14 +106,7 @@ Kryteria akceptacji:
 - Naciśnięcie przycisku otwiera formularz z polami "Przód" i "Tył".
 - Po zapisaniu nowa fiszka pojawia się na liście.
 
-ID: US-008
-Tytuł: Sesja nauki z algorytmem powtórek
-Opis: Jako zalogowany użytkownik chcę, aby dodane fiszki były dostępne w widoku "Sesja nauki" opartym na zewnętrznym algorytmie, aby móc efektywnie się uczyć (spaced repetition).
-Kryteria akceptacji:
-- W widoku "Sesja nauki" algorytm przygotowuje dla mnie sesję nauki fiszek
-- Na start wyświetlany jest przód fiszki, poprzez interakcję użytkownik wyświetla jej tył
-- Użytkownik ocenia zgodnie z oczekiwaniami algorytmu na ile przyswoił fiszkę
-- Następnie algorytm pokazuje kolejną fiszkę w ramach sesji nauki
+<!-- US-008 przeniesione poza MVP -->
 
 ID: US-009
 Tytuł: Bezpieczny dostęp i autoryzacja
