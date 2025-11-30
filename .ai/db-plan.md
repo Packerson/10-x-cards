@@ -7,6 +7,7 @@
 - `locale_enum`: `'pl' | 'en'`
 - `card_source_enum`: `'manual' | 'ai_created' | 'ai_edited'`
 - `card_status_enum`: `'pending' | 'accepted' | 'rejected'`
+- `generation_status_enum`: `'processing' | 'completed' | 'failed'`
 
 
 ### Users -> This table is managed by Supabase Auth
@@ -27,13 +28,15 @@
 | `id`               | bigserial      | PK |
 | `user_id`          | uuid           | NOT NULL, FK → `auth.users.id`, ON DELETE CASCADE            |
 | `prompt_text`      | text           | NOT NULL                                                     |
-| `model`            | text           | NOT NULL                                                     |
-| `model_settings`   | jsonb          | NOT NULL                                                     |
+| `prompt_hash`      | char(32)       | NOT NULL, unikalny per `(user_id, prompt_hash)` – MD5 przyciętego promptu |
+| `model`            | text           | NOT NULL DEFAULT `'gpt-4o'`                                  |
+| `model_settings`   | jsonb          | NOT NULL DEFAULT '{}'::jsonb                                 |
 | `cost_usd`         | numeric(10,4)  | NOT NULL DEFAULT 0                                           |
 | `duration_s`       | integer        | NOT NULL DEFAULT 0                                           |
 | `total_generated`  | integer        | NOT NULL DEFAULT 0                                           |
 | `total_accepted`   | integer        | NOT NULL DEFAULT 0                                           |
 | `total_deleted`    | integer        | NOT NULL DEFAULT 0                                           |
+| `status`           | generation_status_enum | NOT NULL DEFAULT `'processing'`                           |
 | `created_at`       | timestamptz    | NOT NULL DEFAULT `now()`                                     |
 | `updated_at`       | timestamptz    | NOT NULL DEFAULT `now()`                                     |
 

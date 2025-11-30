@@ -122,6 +122,8 @@ export type Database = {
           model: string
           model_settings: Json
           prompt_text: string
+          prompt_hash: string
+          status: Database["public"]["Enums"]["generation_status_enum"]
           total_accepted: number
           total_deleted: number
           total_generated: number
@@ -133,9 +135,11 @@ export type Database = {
           created_at?: string
           duration_s?: number
           id?: number
-          model: string
-          model_settings: Json
+          model?: string
+          model_settings?: Json
           prompt_text: string
+          prompt_hash?: string
+          status?: Database["public"]["Enums"]["generation_status_enum"]
           total_accepted?: number
           total_deleted?: number
           total_generated?: number
@@ -150,6 +154,8 @@ export type Database = {
           model?: string
           model_settings?: Json
           prompt_text?: string
+          prompt_hash?: string
+          status?: Database["public"]["Enums"]["generation_status_enum"]
           total_accepted?: number
           total_deleted?: number
           total_generated?: number
@@ -186,6 +192,7 @@ export type Database = {
     Enums: {
       card_source_enum: "manual" | "ai_created" | "ai_edited"
       card_status_enum: "pending" | "accepted" | "rejected"
+      generation_status_enum: "processing" | "completed" | "failed"
       locale_enum: "pl" | "en"
     }
     CompositeTypes: {
@@ -319,6 +326,7 @@ export const Constants = {
     Enums: {
       card_source_enum: ["manual", "ai_created", "ai_edited"],
       card_status_enum: ["pending", "accepted", "rejected"],
+      generation_status_enum: ["processing", "completed", "failed"],
       locale_enum: ["pl", "en"],
     },
   },
