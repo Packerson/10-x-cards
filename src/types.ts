@@ -46,7 +46,7 @@ export interface ListResponse<TItem> {
 /**
  * --- Generations ---
  */
-export type CardProposalDTO = Pick<CardEntity, "front" | "back">
+export type CardProposalDTO = Pick<CardEntity, "front" | "back" | "source">
 
 export type CreateGenerationCommand = Pick<
   TablesInsert<"generations">,
