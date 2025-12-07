@@ -38,7 +38,7 @@ Twoim zadaniem jest stworzenie kompleksowego planu wdrożenia endpointu interfej
 7. Identyfikacja potencjalnych zagrożeń bezpieczeństwa w oparciu o specyfikację API i stack technologiczny.
 8. Nakreśl potencjalne scenariusze błędów i odpowiadające im kody stanu.
 
-Po przeprowadzeniu analizy utwórz szczegółowy plan wdrożenia w formacie markdown. Plan powinien zawierać następujące sekcje:
+Po przeprowadzeniu analizy utwórz szczegółowy plan wdrożenia w formacie markdown. Planując wiedz, że na proces deveoplmentu korzystamy z DEFAULT_USER_ID z  @src/db/supabase.client.ts:10-11  Plan powinien zawierać następujące sekcje:
 
 1. Przegląd punktu końcowego
 2. Szczegóły żądania

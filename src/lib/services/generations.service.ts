@@ -1,13 +1,15 @@
 import { createHash } from "node:crypto"
 import type { PostgrestError } from "@supabase/supabase-js"
-
 import type { SupabaseClient } from "../../db/supabase.client.ts"
 import type {
   CardProposalDTO,
   CreateGenerationCommand,
   GenerationCreatedDTO,
+  GenerationsListQuery,
+  GenerationsListResponseDTO
 } from "../../types.ts"
-import { createGenerationSchema } from "../validators/generation.ts"
+import { createGenerationSchema } from "../validators/generations.ts"
+
 
 interface CreateGenerationDeps {
   supabase: SupabaseClient
@@ -142,6 +144,58 @@ async function logGenerationError(
     if (statusUpdate.error) dbErrors.push(statusUpdate.error)
     if (errorInsert.error) dbErrors.push(errorInsert.error)
     console.error("Failed to log generation error", dbErrors)
+  }
+}
+
+interface ListGenerationsDeps {
+  supabase: SupabaseClient
+  userId: string
+}
+
+type ListGenerationsError = { code: "database_error"; details?: unknown }
+
+export async function listGenerations(
+  { supabase, userId }: ListGenerationsDeps,
+  params: GenerationsListQuery,
+): Promise<{ data?: GenerationsListResponseDTO; error?: ListGenerationsError }> {
+  const page = params.page ?? 1
+  const limit = params.limit ?? 10
+  const sort = params.sort ?? "created_at"
+  const order = params.order ?? "desc"
+
+  const offset = (page - 1) * limit
+  const to = offset + limit - 1
+
+  const { data, error, count } = await supabase
+    .from("generations")
+    .select(
+      "id, prompt_text, total_generated, total_accepted, total_deleted, created_at, updated_at, model, status",
+      { count: "exact" },
+    )
+    .eq("user_id", userId)
+    .order(sort, { ascending: order === "asc" })
+    .range(offset, to)
+
+  if (error) {
+    console.error("listGenerations: query failed", { userId, params, error })
+    return { error: { code: "database_error", details: error.message } }
+  }
+
+  const totalItems = count ?? 0
+  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / limit)
+
+  return {
+    data: {
+      data: data ?? [],
+      pagination: {
+        page,
+        limit,
+        total_items: totalItems,
+        total_pages: totalPages,
+        sort,
+        order,
+      },
+    },
   }
 }
 

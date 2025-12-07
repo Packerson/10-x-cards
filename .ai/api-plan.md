@@ -16,12 +16,12 @@ Below table lists all endpoints; detailed schemas follow.
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST   | /generations | ✅ | Submit prompt text for AI generation. |
-| GET    | /generations | ✅ | List generations (pagination, filtering). |
+| POST   | /generations | ✅ | Submit prompt text for AI generation. | # DONE (MOCKOWANE AI)
+| GET    | /generations | ✅ | List generations (pagination, filtering). | # DONE
 | GET    | /generations/{id} | ✅ | Get single generation with basic stats. |
 | DELETE | /generations/{id} | ✅ | Delete a generation and its cards & errors. |
 | GET    | /generations/{id}/errors | ✅ | List errors linked to a generation. |
-| POST   | /cards | ✅ | Create cards (manual or accepted AI proposals, bulk supported). |
+| POST   | /cards | ✅ | Create cards (manual or accepted AI proposals, bulk supported). # DONE
 | GET    | /cards | ✅ | List cards with pagination / filtering / sorting. |
 | GET    | /cards/{id} | ✅ | Retrieve single card. |
 | PATCH  | /cards/{id} | ✅ | Update card (front, back, status). |
@@ -50,7 +50,7 @@ Backend assigns default `model` (currently "gpt-4o") and empty `model_settings`.
   "status": "processing",
   "total_generated": 0,
   "card_proposals": [
-    { "front": "string", "back": "string" }
+    { "front": "string", "back": "string", "source": "ai_created"}
   ]
 }
 ```
