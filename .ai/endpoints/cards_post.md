@@ -16,7 +16,7 @@ Endpoint tworzy wiele fiszek naraz (bulk insert). Weryfikuje format danych, piln
 
 ## 3. Wykorzystywane typy
 - `CardCreatePayload`, `CreateCardsCommand`, `CreateCardsResultDTO` z `src/types.ts`
-- Enums: `CardSource`, `CardStatus`
+- Enums: `CardSource`
 - Schemat walidacji (Zod) dla body i kart (nowy plik w `src/lib/validators/cards.ts`)
 
 ## 4. Szczegóły odpowiedzi
@@ -38,7 +38,6 @@ Endpoint tworzy wiele fiszek naraz (bulk insert). Weryfikuje format danych, piln
 3. Serwis:
    - Buduje payload z `user_id = DEFAULT_USER_ID` + pola kart.
    - Wykonuje `insert` przez Supabase z `count: 'exact'`, `returning: 'minimal'`.
-   - Polega na triggerach DB na ustawienie `status` i aktualizację liczników generacji.
 4. Handler zwraca 201 z liczbą wstawionych rekordów.
 
 ## 6. Względy bezpieczeństwa

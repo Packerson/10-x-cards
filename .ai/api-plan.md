@@ -22,9 +22,9 @@ Below table lists all endpoints; detailed schemas follow.
 | DELETE | /generations/{id} | ✅ | Delete a generation and its cards & errors. |
 | GET    | /generations/{id}/errors | ✅ | List errors linked to a generation. |
 | POST   | /cards | ✅ | Create cards (manual or accepted AI proposals, bulk supported). # DONE
-| GET    | /cards | ✅ | List cards with pagination / filtering / sorting. |
-| GET    | /cards/{id} | ✅ | Retrieve single card. |
-| PATCH  | /cards/{id} | ✅ | Update card (front, back, status). |
+| GET    | /cards | ✅ | List cards with pagination / filtering / sorting. | DONE
+| GET    | /cards/{id} | ✅ | Retrieve single card. | DONE
+| PATCH  | /cards/{id} | ✅ | Update card (front, back). | DONE
 | DELETE | /cards/{id} | ✅ | Delete card. |
 | GET    | /profile | ✅ | Get current profile. |
 | PATCH  | /profile | ✅ | Update profile (locale). |
@@ -82,7 +82,7 @@ Query params:
 ```
 
 #### GET /generations/{id}
-Returns generation plus aggregated counters: `totalGenerated`, `totalAccepted`, `totalDeleted`.
+Returns generation plus aggregated counters: `totalGenerated`, `totalAccepted`, `totalRejected`.
 
 #### DELETE /generations/{id}
 Soft delete: removes generation, associated cards & errors. 204 No Content.
@@ -140,7 +140,6 @@ Validation & Errors:
 Query params:
 - `page` (default 1)
 - `limit` (default 10)
-- `status` (pending|accepted|rejected)
 - `source` (manual|ai_created|ai_edited)
 - `generation_id`
 - `search` (full-text on `front`)
@@ -166,11 +165,10 @@ Query params:
 Returns full card.
 
 #### PATCH /cards/{id}
-Allows updating `front`, `back`, `status`.
+Allows updating `front`, `back`.
 
-Status transitions enforced server-side:
-- AI-created default `pending` → `accepted` or `rejected` only.
-- Manual cards always `accepted`.
+Source from `ai_created` is changed to `ai_edited`
+- 
 
 #### DELETE /cards/{id}
 Permanent delete; triggers DB trigger to update generation counters.
@@ -195,13 +193,12 @@ Returns 200 with updated profile.
 | Generation.promptHash | Unique per user | DB schema line 30 |
 | Card.front | ≤200 chars, unique per user | DB lines 62-70 |
 | Card.back | ≤500 chars | DB line 63 |
-| Card.source/status defaulting | Trigger `tr_cards_default_status` | DB line 144 |
-| Card.status transitions | Business logic; reject invalid moves | PRD 78-83 |
+| Card.source defaulting | No status in cards; only `source` is stored | - |
 | Counters update | Trigger `tr_cards_update_counters` | DB line 145 |
 
 ### Additional Business Logic
-- After POST /generations, a background worker calls the OpenRouter API and inserts proposed cards with `source = "ai_created"` & `status = "pending"` linked to the generation, for NOW THIS PART SHOULD BE MOCKED!.
-- When the client approves proposals, it resubmits via POST /cards (bulk) with `source = "ai_created"` and `status = "accepted"`.
+- After POST /generations, a background worker calls the OpenRouter API and inserts proposed cards with `source = "ai_created"` linked to the generation (mocked in MVP).
+- When the client approves proposals, it resubmits via POST /cards (bulk) with `source = "ai_created"` (no status field).
 - Deleting cards updates counters via DB trigger.
 
 ## 5. Errors (common)

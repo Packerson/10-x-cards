@@ -66,7 +66,7 @@ export async function createGeneration(
       status: "processing",
       total_generated: cardProposals.length,
       total_accepted: 0,
-      total_deleted: 0,
+      total_rejected: 0,
       model: DEFAULT_MODEL,
       model_settings: {},
     })
@@ -169,7 +169,7 @@ export async function listGenerations(
   const { data, error, count } = await supabase
     .from("generations")
     .select(
-      "id, prompt_text, total_generated, total_accepted, total_deleted, created_at, updated_at, model, status",
+      "id, prompt_text, total_generated, total_accepted, total_rejected, created_at, updated_at, model, status",
       { count: "exact" },
     )
     .eq("user_id", userId)

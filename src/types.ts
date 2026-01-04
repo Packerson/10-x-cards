@@ -15,7 +15,6 @@ export type GenerationErrorEntity = Tables<"generation_errors">
 export type ProfileEntity = Tables<"profiles">
 
 export type CardSource = Enums<"card_source_enum">
-export type CardStatus = Enums<"card_status_enum">
 export type UserLocale = Enums<"locale_enum">
 
 export type GenerationLifecycleStatus = Enums<"generation_status_enum">
@@ -73,7 +72,7 @@ export type GenerationListItemDTO = Pick<
   | "prompt_text"
   | "total_generated"
   | "total_accepted"
-  | "total_deleted"
+  | "total_rejected"
   | "created_at"
   | "updated_at"
   | "model"
@@ -102,13 +101,7 @@ export type GenerationErrorsListResponseDTO =
 export type CardCreatePayload = Pick<
   TablesInsert<"cards">,
   "front" | "back" | "source" | "generation_id"
-> & {
-  /**
-   * API plan nie precyzuje, czy klient przesyła status przy insercie.
-   * Pole zostaje opcjonalne; brak wartości oznacza, że status ustali trigger DB.
-   */
-  status?: CardStatus
-}
+>
 
 export interface CreateCardsCommand {
   cards: CardCreatePayload[]
@@ -118,12 +111,13 @@ export interface CreateCardsResultDTO {
   inserted: number
 }
 
+export type DeleteCardResultDTO = Pick<CardEntity, "id">
+
 export type CardSortField = "created_at" | "updated_at" | "front"
 
 export interface CardsListQuery extends PaginationQuery {
   sort?: CardSortField
   order?: SortOrder
-  status?: CardStatus
   source?: CardSource
   generation_id?: CardEntity["generation_id"]
   search?: string
@@ -140,7 +134,7 @@ export type CardDetailDTO = Pick<
 
 export type UpdateCardCommand = Pick<
   TablesUpdate<"cards">,
-  "front" | "back" | "status"
+  "front" | "back"
 >
 
 /**
