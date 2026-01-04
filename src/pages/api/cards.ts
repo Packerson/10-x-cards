@@ -68,7 +68,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const cards = validation.data.cards
 
   const missingGenerationId = cards.some(
-    (card) => card.source === "ai_created" && card.generation_id === undefined,
+    (card) =>
+      (card.source === "ai_created" || card.source === "ai_edited") &&
+      card.generation_id === undefined,
   )
 
   if (missingGenerationId) {
@@ -77,6 +79,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       headers: { "Content-Type": "application/json" },
     })
   }
+
+  // TODO (MVP/FE): jeśli user edytuje propozycję przed zapisem, frontend powinien wysłać
+  // source: "ai_edited" oraz nadal przekazywać generation_id (żeby zachować powiązanie z generacją).
+  // Wtedy warto rozszerzyć walidację serwera tak, aby generation_id było wymagane także dla "ai_edited".
 
   const generationIds = Array.from(
     new Set(
@@ -89,10 +95,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const supabase = (locals as any)?.supabase ?? supabaseClient
   const userId = DEFAULT_USER_ID
 
+  let generationsForRequest: Array<{ id: number; total_generated: number | null }> | null = null
+
   if (generationIds.length > 0) {
     const { data: generations, error: generationError } = await supabase
       .from("generations")
-      .select("id")
+      .select("id, total_generated")
       .eq("user_id", userId)
       .in("id", generationIds)
 
@@ -112,6 +120,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
         headers: { "Content-Type": "application/json" },
       })
     }
+
+    generationsForRequest = generations
   }
 
   const { data, error } = await createCards({ supabase, userId }, cards)
@@ -138,6 +148,57 @@ export const POST: APIRoute = async ({ request, locals }) => {
           status: 500,
           headers: { "Content-Type": "application/json" },
         })
+    }
+  }
+
+  // Jeśli zapisujemy karty powiązane z generacją, domykamy cykl życia generacji.
+  // Best-effort: nie psujemy odpowiedzi 201 w razie błędu update'u (żeby uniknąć retry + duplikatów).
+  if (generationIds.length > 0) {
+    const acceptedByGenerationId = new Map<number, number>()
+    for (const card of cards) {
+      if (typeof card.generation_id !== "number") continue
+      if (card.source !== "ai_created" && card.source !== "ai_edited") continue
+      acceptedByGenerationId.set(
+        card.generation_id,
+        (acceptedByGenerationId.get(card.generation_id) ?? 0) + 1,
+      )
+    }
+
+    const generations = generationsForRequest
+
+    if (!generations) {
+      console.error("POST /api/cards: missing generationsForRequest for counters update", {
+        userId,
+        generationIds,
+      })
+    } else {
+      await Promise.all(
+        generations.map(async (g: { id: number; total_generated: number | null }) => {
+          const accepted = acceptedByGenerationId.get(g.id) ?? 0
+          const totalGenerated = typeof g.total_generated === "number" ? g.total_generated : 0
+          const rejected = Math.max(0, totalGenerated - accepted)
+
+          const { error: updateError } = await supabase
+            .from("generations")
+            .update({ status: "completed", total_accepted: accepted, total_rejected: rejected })
+            .eq("user_id", userId)
+            .eq("id", g.id)
+
+          if (updateError) {
+            console.error("POST /api/cards: failed to update generation status/counters", {
+              userId,
+              generationId: g.id,
+              accepted,
+              rejected,
+              totalGenerated,
+              db_code: updateError.code,
+              message: updateError.message,
+              details: updateError.details,
+              hint: updateError.hint,
+            })
+          }
+        }),
+      )
     }
   }
 

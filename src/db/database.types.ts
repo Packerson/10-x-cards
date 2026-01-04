@@ -43,7 +43,6 @@ export type Database = {
           generation_id: number | null
           id: number
           source: Database["public"]["Enums"]["card_source_enum"]
-          status: Database["public"]["Enums"]["card_status_enum"]
           updated_at: string
           user_id: string
         }
@@ -55,7 +54,6 @@ export type Database = {
           generation_id?: number | null
           id?: number
           source: Database["public"]["Enums"]["card_source_enum"]
-          status: Database["public"]["Enums"]["card_status_enum"]
           updated_at?: string
           user_id: string
         }
@@ -67,7 +65,6 @@ export type Database = {
           generation_id?: number | null
           id?: number
           source?: Database["public"]["Enums"]["card_source_enum"]
-          status?: Database["public"]["Enums"]["card_status_enum"]
           updated_at?: string
           user_id?: string
         }
@@ -125,7 +122,7 @@ export type Database = {
           prompt_hash: string
           status: Database["public"]["Enums"]["generation_status_enum"]
           total_accepted: number
-          total_deleted: number
+          total_rejected: number
           total_generated: number
           updated_at: string
           user_id: string
@@ -141,7 +138,7 @@ export type Database = {
           prompt_hash?: string
           status?: Database["public"]["Enums"]["generation_status_enum"]
           total_accepted?: number
-          total_deleted?: number
+          total_rejected?: number
           total_generated?: number
           updated_at?: string
           user_id: string
@@ -157,7 +154,7 @@ export type Database = {
           prompt_hash?: string
           status?: Database["public"]["Enums"]["generation_status_enum"]
           total_accepted?: number
-          total_deleted?: number
+          total_rejected?: number
           total_generated?: number
           updated_at?: string
           user_id?: string
@@ -191,7 +188,6 @@ export type Database = {
     }
     Enums: {
       card_source_enum: "manual" | "ai_created" | "ai_edited"
-      card_status_enum: "pending" | "accepted" | "rejected"
       generation_status_enum: "processing" | "completed" | "failed"
       locale_enum: "pl" | "en"
     }
@@ -325,7 +321,6 @@ export const Constants = {
   public: {
     Enums: {
       card_source_enum: ["manual", "ai_created", "ai_edited"],
-      card_status_enum: ["pending", "accepted", "rejected"],
       generation_status_enum: ["processing", "completed", "failed"],
       locale_enum: ["pl", "en"],
     },

@@ -1,7 +1,7 @@
 # API Endpoint Implementation Plan: POST /cards
 
 ## 1. Przegląd punktu końcowego
-Endpoint tworzy wiele fiszek naraz (bulk insert). Weryfikuje format danych, pilnuje powiązania z generacją przy źródle `ai_created` i zwraca liczbę wstawionych rekordów. Operacje idą przez Supabase z aktywnym RLS. Na ten moment używamy `DEFAULT_USER_ID` z `src/db/supabase.client.ts` zamiast sprawdzać zalogowanego usera.
+Endpoint tworzy wiele fiszek naraz (bulk insert). Weryfikuje format danych, pilnuje powiązania z generacją przy źródłach `ai_created` i `ai_edited`, zwraca liczbę wstawionych rekordów, a przy kartach powiązanych z generacją domyka generację (`status = completed`) oraz zapisuje snapshot liczników (`total_accepted`, `total_rejected`). Operacje idą przez Supabase z aktywnym RLS. Na ten moment używamy `DEFAULT_USER_ID` z `src/db/supabase.client.ts` zamiast sprawdzać zalogowanego usera.
 
 ## 2. Szczegóły żądania
 - Metoda HTTP: POST
@@ -9,19 +9,19 @@ Endpoint tworzy wiele fiszek naraz (bulk insert). Weryfikuje format danych, piln
 - Nagłówki: `Content-Type: application/json`; brak wymogu auth (tymczasowo wymuszony `DEFAULT_USER_ID`)
 - Parametry:
   - Wymagane: w każdym elemencie tablicy `front` (<=200), `back` (<=500), `source` (`manual|ai_created|ai_edited`)
-  - Opcjonalne: `generation_id` (wymagane, gdy `source = ai_created`; przy `manual` opcjonalne/ignorowane)
+  - Opcjonalne: `generation_id` (wymagane, gdy `source = ai_created|ai_edited`; przy `manual` opcjonalne/ignorowane)
 - Request Body: `{ "cards": CardCreatePayload[] }`
   - Pola tablicy zgodne z `CardCreatePayload` z `src/types.ts`
   - Rekomendowane ograniczenie wielkości tablicy (np. <= 100) dla wydajności
 
 ## 3. Wykorzystywane typy
 - `CardCreatePayload`, `CreateCardsCommand`, `CreateCardsResultDTO` z `src/types.ts`
-- Enums: `CardSource`, `CardStatus`
+- Enums: `CardSource`
 - Schemat walidacji (Zod) dla body i kart (nowy plik w `src/lib/validators/cards.ts`)
 
 ## 4. Szczegóły odpowiedzi
 - 201: `{ "inserted": number }`
-- 400: brak `generation_id` przy `source = ai_created` lub pusta tablica
+- 400: brak `generation_id` przy `source = ai_created|ai_edited` lub pusta tablica
 - 401: nieużywane w tym etapie (brak weryfikacji sesji, używamy `DEFAULT_USER_ID`)
 - 404: `generation_id` wskazuje zasób nieistniejący lub nienależący do użytkownika
 - 422: walidacja pól (długości, niedozwolone source) albo naruszenie unikalności `(user_id, front)`
@@ -32,13 +32,17 @@ Endpoint tworzy wiele fiszek naraz (bulk insert). Weryfikuje format danych, piln
 2. Handler POST w `src/pages/api/cards.ts`:
    - Parsuje JSON.
    - Waliduje body schematem Zod → `CreateCardsCommand`.
-   - Guard: jeśli którykolwiek element ma `source = ai_created` i brak `generation_id` → 400.
+   - Guard: jeśli którykolwiek element ma `source = ai_created|ai_edited` i brak `generation_id` → 400.
    - Zbiera unikalne `generation_id` z payloadu; jeśli istnieją, sprawdza w Supabase, czy należą do `DEFAULT_USER_ID` (SELECT ... IN ids). Brak dopasowania → 404.
    - Wywołuje serwis `cardsService.createCards(supabase, userId, cards)` (nowy plik w `src/lib/services/cards.service.ts`).
+   - Jeśli payload zawiera `generation_id`, to po udanym insercie:
+     - ustawia `generations.status = completed`
+     - ustawia snapshot liczników:
+       - `total_accepted` = liczba zapisanych kart AI (`ai_created` + `ai_edited`) z tym `generation_id`
+       - `total_rejected` = `total_generated - total_accepted`
 3. Serwis:
    - Buduje payload z `user_id = DEFAULT_USER_ID` + pola kart.
    - Wykonuje `insert` przez Supabase z `count: 'exact'`, `returning: 'minimal'`.
-   - Polega na triggerach DB na ustawienie `status` i aktualizację liczników generacji.
 4. Handler zwraca 201 z liczbą wstawionych rekordów.
 
 ## 6. Względy bezpieczeństwa
@@ -49,7 +53,7 @@ Endpoint tworzy wiele fiszek naraz (bulk insert). Weryfikuje format danych, piln
 
 ## 7. Obsługa błędów
 - Walidacja schematu: 422 z komunikatami pól.
-- Brak `generation_id` przy `ai_created`: 400.
+- Brak `generation_id` przy `ai_created|ai_edited`: 400.
 - Generacja nie istnieje / nie należy do usera: 404.
 - Naruszenie unikalności `(user_id, front)`: mapować błąd Supabase/PG `unique_violation` na 422.
 - Błąd DB lub nieoczekiwany wyjątek: 500; log do console/error monitoringu. Brak potrzeby wpisu do `generation_errors` (dotyczy procesów generacji, nie tworzenia kart).
@@ -66,9 +70,10 @@ Endpoint tworzy wiele fiszek naraz (bulk insert). Weryfikuje format danych, piln
 3. Dodać trasę `src/pages/api/cards.ts`:
    - `export const prerender = false; export const POST = ...`
    - Użyć `DEFAULT_USER_ID` z `src/db/supabase.client.ts` zamiast `locals.supabase.auth.getUser()`.
-   - Walidacja body, guardy dla `ai_created`.
+   - Walidacja body, guardy dla `ai_created|ai_edited`.
    - Walidacja właścicielstwa `generation_id` względem `DEFAULT_USER_ID` (SELECT z filtrem user_id).
    - Wywołanie serwisu, zwrot 201 z `{ inserted }`.
+   - Domknięcie generacji i zapis snapshot liczników przy payloadzie z `generation_id`.
    - Mapowanie i zwrócenie błędów (400/404/422/500).
 4. Krótkie sprawdzenie lintera/formatowania po zmianach.
 

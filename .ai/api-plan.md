@@ -18,16 +18,16 @@ Below table lists all endpoints; detailed schemas follow.
 |--------|------|------|-------------|
 | POST   | /generations | ✅ | Submit prompt text for AI generation. | # DONE (MOCKOWANE AI)
 | GET    | /generations | ✅ | List generations (pagination, filtering). | # DONE
-| GET    | /generations/{id} | ✅ | Get single generation with basic stats. |
-| DELETE | /generations/{id} | ✅ | Delete a generation and its cards & errors. |
-| GET    | /generations/{id}/errors | ✅ | List errors linked to a generation. |
+| GET    | /generations/{id} | ✅ | Get single generation with basic stats. | DONE
+| DELETE | /generations/{id} | ✅ | Delete a generation and its cards & errors. | DONE
+| GET    | /generations/{id}/errors | ✅ | List errors linked to a generation. | DONE
 | POST   | /cards | ✅ | Create cards (manual or accepted AI proposals, bulk supported). # DONE
-| GET    | /cards | ✅ | List cards with pagination / filtering / sorting. |
-| GET    | /cards/{id} | ✅ | Retrieve single card. |
-| PATCH  | /cards/{id} | ✅ | Update card (front, back, status). |
-| DELETE | /cards/{id} | ✅ | Delete card. |
-| GET    | /profile | ✅ | Get current profile. |
-| PATCH  | /profile | ✅ | Update profile (locale). |
+| GET    | /cards | ✅ | List cards with pagination / filtering / sorting. | DONE
+| GET    | /cards/{id} | ✅ | Retrieve single card. | DONE
+| PATCH  | /cards/{id} | ✅ | Update card (front, back). | DONE
+| DELETE | /cards/{id} | ✅ | Delete card. | DONE
+| GET    | /profile | ✅ | Get current profile. | DONE
+| PATCH  | /profile | ✅ | Update profile (locale). | DONE
 
 ### 2.1 Generations
 
@@ -41,6 +41,7 @@ Submit a prompt to generate flash-cards.
 }
 ```
 Backend assigns default `model` (currently "gpt-4o") and empty `model_settings`.
+Generation is created with `status = "processing"`. After the user accepts/edits proposals and saves cards via `POST /cards`, backend marks the generation as `status = "completed"` and stores snapshot counters (`total_accepted`, `total_rejected`).
 
 *Success 201 JSON*
 ```json
@@ -82,10 +83,10 @@ Query params:
 ```
 
 #### GET /generations/{id}
-Returns generation plus aggregated counters: `totalGenerated`, `totalAccepted`, `totalDeleted`.
+Returns generation plus aggregated counters: `total_generated`, `total_accepted`, `total_rejected`.
 
 #### DELETE /generations/{id}
-Soft delete: removes generation, associated cards & errors. 204 No Content.
+removes generation, associated cards & errors. 204 No Content.
 
 #### GET /generations/{id}/errors
 Filterable by `error_code`.
@@ -119,7 +120,7 @@ Accepts array for bulk insert.
       "front": "string ≤200",
       "back": "string ≤500",
       "source": "manual|ai_created|ai_edited",
-      "generation_id": 123            // optional when manual
+      "generation_id": 123            // required when source = ai_created|ai_edited; optional when manual
     }
   ]
 }
@@ -134,13 +135,12 @@ Accepts array for bulk insert.
 
 Validation & Errors:
 - 422 if any card violates length or uniqueness `front` per user.
-- If `source = ai_created` and no `generation_id`, 400.
+- If `source = ai_created|ai_edited` and no `generation_id`, 400.
 
 #### GET /cards
 Query params:
 - `page` (default 1)
 - `limit` (default 10)
-- `status` (pending|accepted|rejected)
 - `source` (manual|ai_created|ai_edited)
 - `generation_id`
 - `search` (full-text on `front`)
@@ -166,11 +166,10 @@ Query params:
 Returns full card.
 
 #### PATCH /cards/{id}
-Allows updating `front`, `back`, `status`.
+Allows updating `front`, `back`.
 
-Status transitions enforced server-side:
-- AI-created default `pending` → `accepted` or `rejected` only.
-- Manual cards always `accepted`.
+Source from `ai_created` is changed to `ai_edited`
+- 
 
 #### DELETE /cards/{id}
 Permanent delete; triggers DB trigger to update generation counters.
@@ -178,7 +177,7 @@ Permanent delete; triggers DB trigger to update generation counters.
 ### 2.3 Profile
 
 #### GET /profile
-Returns current profile (`id`, `locale`, `createdAt`).
+Returns current profile (`id`, `locale`, `created_at`).
 
 #### PATCH /profile
 ```json
@@ -195,14 +194,16 @@ Returns 200 with updated profile.
 | Generation.promptHash | Unique per user | DB schema line 30 |
 | Card.front | ≤200 chars, unique per user | DB lines 62-70 |
 | Card.back | ≤500 chars | DB line 63 |
-| Card.source/status defaulting | Trigger `tr_cards_default_status` | DB line 144 |
-| Card.status transitions | Business logic; reject invalid moves | PRD 78-83 |
+| Card.source defaulting | No status in cards; only `source` is stored | - |
 | Counters update | Trigger `tr_cards_update_counters` | DB line 145 |
 
 ### Additional Business Logic
-- After POST /generations, a background worker calls the OpenRouter API and inserts proposed cards with `source = "ai_created"` & `status = "pending"` linked to the generation, for NOW THIS PART SHOULD BE MOCKED!.
-- When the client approves proposals, it resubmits via POST /cards (bulk) with `source = "ai_created"` and `status = "accepted"`.
-- Deleting cards updates counters via DB trigger.
+- POST /generations returns proposals (mocked in MVP; docelowo LLM).
+- When the client approves proposals, it saves accepted cards via POST /cards (bulk) with `source = "ai_created"` or `source = "ai_edited"` (if the user changed the content before saving), always with `generation_id`.
+- After successful POST /cards for a given `generation_id`, backend marks the generation as `status = "completed"` and stores snapshot counters:
+  - `total_accepted` = number of saved AI cards (ai_created + ai_edited) linked to the generation
+  - `total_rejected` = `total_generated - total_accepted`
+- Deleting cards later increments `generations.total_rejected` via DB trigger (treated as "rejected/removed over time").
 
 ## 5. Errors (common)
 
@@ -240,4 +241,4 @@ Returns 200 with updated profile.
 *Assumptions*
 - Deleting a generation cascades to cards & errors (DB `ON DELETE CASCADE`).
 - `modelSettings` is stored verbatim; backend does not validate shape beyond JSON.
-- Status of card `rejected` means card is deleted before INSERT; thus not stored.
+- Rejected proposals are not stored as cards; they are represented only via generation counters (snapshot on completion), and by `total_rejected` increments on later physical DELETE of cards.
