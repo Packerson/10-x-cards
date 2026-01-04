@@ -35,7 +35,7 @@
 | `duration_s`       | integer        | NOT NULL DEFAULT 0                                           |
 | `total_generated`  | integer        | NOT NULL DEFAULT 0                                           |
 | `total_accepted`   | integer        | NOT NULL DEFAULT 0                                           |
-| `total_deleted`    | integer        | NOT NULL DEFAULT 0                                           |
+| `total_rejected`    | integer        | NOT NULL DEFAULT 0                                           |
 | `status`           | generation_status_enum | NOT NULL DEFAULT `'processing'`                           |
 | `created_at`       | timestamptz    | NOT NULL DEFAULT `now()`                                     |
 | `updated_at`       | timestamptz    | NOT NULL DEFAULT `now()`                                     |

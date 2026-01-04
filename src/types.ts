@@ -142,5 +142,7 @@ export type UpdateCardCommand = Pick<
  */
 export type ProfileDTO = ProfileEntity
 
+export type GetProfileDTO = Pick<ProfileEntity, "id" | "locale" | "created_at">
+
 export type UpdateProfileCommand = Pick<TablesUpdate<"profiles">, "locale">
 

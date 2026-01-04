@@ -1,7 +1,8 @@
 # API Endpoint Implementation Plan: POST /generations
 
 ## 1. Przegląd punktu końcowego
-Punkt końcowy umożliwia zainicjowanie generowania fiszek na podstawie dostarczonego tekstu (prompt). Tworzy rekord `generations` w statusie `processing`, wylicza skrót MD5 dla deduplikacji, triggeruje proces AI i zwraca wstępne propozycje fiszek.
+Punkt końcowy umożliwia zainicjowanie generowania fiszek na podstawie dostarczonego tekstu (prompt). Tworzy rekord `generations` w statusie `processing`, wylicza skrót MD5 dla deduplikacji i zwraca wstępne propozycje fiszek (mock w MVP; docelowo LLM).
+Domknięcie generacji (`status = completed`) oraz ustawienie snapshot liczników (`total_accepted`, `total_rejected`) następuje dopiero po zapisie zaakceptowanych/edytowanych kart przez `POST /cards`.
 
 ## 2. Szczegóły żądania
 - **Metoda HTTP:** POST
@@ -53,9 +54,10 @@ Przykład 201:
    3. W transakcji:
       - Próbuje wstawić rekord do `generations` z unikalnością `(user_id,prompt_hash)`.
       - W przypadku konfliktu zwraca 409.
-   4. Aktualizuje `total_generated`.
+   4. Ustawia `total_generated` na liczbę zwróconych propozycji (`card_proposals.length`) oraz `status = processing`.
 5. Błędy LLM zapisywane w `generation_errors` + update `status = 'failed'`.
 6. Odpowiedź 201 z `GenerationCreatedDTO`.
+7. Po akceptacji/edycji propozycji frontend zapisuje karty przez `POST /cards`, co domyka generację (`status = completed`) i ustawia snapshot liczników.
 
 
 ## 6. Względy bezpieczeństwa

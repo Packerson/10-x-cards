@@ -105,6 +105,5 @@
    - `database_error` → 500
 4. **Typy (opcjonalnie, jeśli trzymamy kontrakt w `src/types.ts`)**:
    - dodać `DeleteCardResultDTO` i użyć w route/serwisie.
-5. **Spójność kontraktu**:
-   - Uzgodnić semantykę liczników generacji (`total_deleted`) i nazewnictwo (rejected vs deleted) — jeśli wymagane, zaktualizować dokumentację/kontrakt.
+
 
