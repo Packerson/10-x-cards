@@ -12,7 +12,7 @@ Kluczowe założenia architektoniczne:
 - Stan lokalny z `useState` bez bibliotek cache'ujących
 - Walidacja real-time z Zod, błędy inline
 - Komunikaty sukcesu jako toast notifications
-- Sticky header z nawigacją kontekstową (zalogowany/niezalogowany)
+-  header z nawigacją kontekstową (zalogowany/niezalogowany)
 
 ---
 
@@ -475,7 +475,7 @@ Potwierdź  Anuluj/timeout
 ```
 ┌────────────────────────────────────────────────┐
 │ ┌────────────────────────────────────────────┐ │
-│ │           STICKY HEADER                    │ │
+│ │            HEADER                    │ │
 │ │  Logo    Nav Items    Profile Dropdown     │ │
 │ └────────────────────────────────────────────┘ │
 ├────────────────────────────────────────────────┤
@@ -543,10 +543,10 @@ Potwierdź  Anuluj/timeout
 | Komponent | Opis | Używany w |
 |-----------|------|-----------|
 | `MainLayout` | Główny layout z header i main content area | Wszystkie strony |
-| `StickyHeader` | Nawigacja sticky u góry strony | MainLayout |
-| `NavLink` | Link nawigacyjny z aktywnym stanem | StickyHeader |
-| `UserMenu` | Dropdown z linkiem do profilu i wylogowaniem | StickyHeader |
-| `MobileMenu` | Rozwijane menu na mobile | StickyHeader |
+| `Header` | Nawigacja  u góry strony | MainLayout |
+| `NavLink` | Link nawigacyjny z aktywnym stanem | Header |
+| `UserMenu` | Dropdown z linkiem do profilu i wylogowaniem | Header |
+| `MobileMenu` | Rozwijane menu na mobile | Header |
 
 ### 5.2 Komponenty formularzy
 
@@ -639,7 +639,7 @@ Potwierdź  Anuluj/timeout
 | US-005 | Edycja fiszek | `/cards` | FlashCard, InlineEditor |
 | US-006 | Usuwanie fiszek | `/cards` | FlashCard, InlineConfirmation |
 | US-007 | Tworzenie ręczne | `/cards` | CreateCardModal, FormField |
-| US-009 | Bezpieczny dostęp | Wszystkie | StickyHeader, middleware |
+| US-009 | Bezpieczny dostęp | Wszystkie | Header, middleware |
 
 ---
 

@@ -23,7 +23,7 @@ export function GenerateView() {
   const hasProposals = proposals.length > 0
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-8">
+    <div>
       <header className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Generuj fiszki
