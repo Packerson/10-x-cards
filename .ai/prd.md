@@ -22,17 +22,21 @@ Manualne tworzenie wysokiej jakości fiszek wymaga dużych nakładów czasu i wy
    - Rejestracja i logowanie.
    - Możliwość usunięcia konta i powiązanych fiszek na życzenie.
 
-4. Integracja z algorytmem powtórek (poza MVP):
-   - Funkcjonalność sesji nauki opartej na spaced-repetition zostanie dodana w kolejnych iteracjach.
-   - Wersja MVP skupia się wyłącznie na generowaniu, edycji i zarządzaniu fiszkami.
+4. Podstawowe sesje nauki (MVP):
+   - Użytkownik może tworzyć sesje nauki i wznawiać je od ostatniej fiszki.
+   - Zaawansowany algorytm powtórek (spaced-repetition) pozostaje poza MVP.
 
-5. Przechowywanie i skalowalność:
+5. Kategorie i talie (MVP):
+   - Użytkownik może tworzyć, edytować i usuwać własne kategorie.
+   - Użytkownik może tworzyć, edytować i usuwać własne talie (decki).
+
+6. Przechowywanie i skalowalność:
    - Dane o fiszkach i użytkownikach przechowywane w sposób zapewniający skalowalność i bezpieczeństwo.
 
-6. Statystyki generowania fiszek:
+7. Statystyki generowania fiszek:
    - Zbieranie informacji o tym, ile fiszek zostało wygenerowanych przez AI i ile z nich ostatecznie zaakceptowano.
 
-7. Wymagania prawne i ograniczenia:
+8. Wymagania prawne i ograniczenia:
    - Dane osobowe użytkowników i fiszek przechowywane zgodnie z RODO.
    - Prawo do wglądu i usunięcia danych (konto wraz z fiszkami) na wniosek użytkownika.
 
@@ -46,15 +50,13 @@ Manualne tworzenie wysokiej jakości fiszek wymaga dużych nakładów czasu i wy
    - Współdzielenie fiszek między użytkownikami.
    - Rozbudowany system powiadomień.
    - Zaawansowane wyszukiwanie fiszek po słowach kluczowych.
-   - Plan rozbudowy po MVP:
-     - Użytkownik wybiera liczbę propozycji fiszek do wygenerowania.
-     - Model Kategoria: każdy użytkownik tworzy własne kategorie.
-     - Przypisywanie kategorii do pojedynczej fiszki lub całej generacji.
-     - Model Deck: każdy użytkownik tworzy własne talie.
-     - Widok edycji talii (m.in. zarządzanie kolejnością fiszek w talii).
-     - Planowanie sesji nauki:
-       - Wybór talii do nauki; kolejność losowa lub zgodna z kolejnością ustawioną przez użytkownika.
-       - Wybór kategorii do nauki; kolejność fiszek zawsze losowa.
+  - Plan rozbudowy po MVP:
+    - Użytkownik wybiera liczbę propozycji fiszek do wygenerowania.
+    - Przypisywanie kategorii do pojedynczej fiszki lub całej generacji.
+    - Widok edycji talii (m.in. zarządzanie kolejnością fiszek w talii).
+    - Planowanie sesji nauki:
+      - Wybór talii do nauki; kolejność losowa lub zgodna z kolejnością ustawioną przez użytkownika.
+      - Wybór kategorii do nauki; kolejność fiszek zawsze losowa.
 
 ## 5. Historyjki użytkowników
 
@@ -63,7 +65,6 @@ Tytuł: Rejestracja konta
 Opis: Jako nowy użytkownik chcę się zarejestrować, aby mieć dostęp do własnych fiszek i móc korzystać z generowania fiszek przez AI.
 Kryteria akceptacji:
 - Formularz rejestracyjny zawiera pola na adres e-mail i hasło.
-- Po poprawnym wypełnieniu formularza i weryfikacji danych konto jest aktywowane.
 - Użytkownik otrzymuje potwierdzenie pomyślnej rejestracji i zostaje zalogowany.
 
 ID: US-002
@@ -74,7 +75,43 @@ Kryteria akceptacji:
 - Błędne dane logowania wyświetlają komunikat o nieprawidłowych danych.
 - Dane dotyczące logowania przechowywane są w bezpieczny sposób.
 
-ID: US-003
+
+## US-003: Bezpieczny dostęp i uwierzytelnianie
+
+- Tytuł: Bezpieczny dostęp
+- Opis: Jako użytkownik chcę mieć możliwość rejestracji i logowania się do systemu w sposób zapewniający bezpieczeństwo moich danych.
+- Kryteria akceptacji:
+  - Logowanie i rejestracja odbywają się na dedykowanych stronach.
+  - Logowanie wymaga podania adresu email i hasła.
+  - Rejestracja wymaga podania adresu email, hasła i potwierdzenia hasła.
+  - Użytkownik MOŻE korzystać z generowania fiszek AI, ma dostęp do swoich fiszek
+  - Użytkownik NIE MOŻE korzystać z funkcji generowania fiszek, tworzenia ręcznie bez logowania się do systemu.
+  - Użytkownik może logować się do systemu poprzez przycisk w prawym górnym rogu.
+  - Użytkownik może się wylogować z systemu poprzez przycisk w prawym górnym rogu w głównym @Layout.astro.
+  - Nie korzystamy z zewnętrznych serwisów logowania (np. Google, GitHub).
+  - Odzyskiwanie hasła powinno być możliwe.
+
+
+## US-004 Zalogowany user
+- Tytuł: po zalgowaniu
+- Co mogę po zalogowaniu:
+- Kryteria akcpetacji:
+   - Mam dostęp do ustawień profilu
+   - mam dostęp do tryby generowania fiszek przez AI
+   - mam dostęp do tworzenia/edycji/kasowanie swoich fiszek
+   - mam dostęp do tworzenia/edycji/kasowanie swoich kategorii
+   - mam dostęp do tworzenia/edycji/kasowanie swoich decków
+   - mam dostęp do tworzenia sesji nauki i wznawiania ich od ostatniej fiszki
+
+
+  ## US-005 Niezalogowany user
+- Tytuł: Niezalogowany user
+- OPIS: Jako niezalogowany user mam dostępn do X przykładowych fiszek
+- Kryteria akceptacji:
+   - Na stronie startowej jako niezalogowany user widzę opcje logowania, rejestracji, propyzcjię "Przykładowe fiszki"
+   - Mogę rozpocząć sesję nauki z przykładowymi fiszkami z bazy danych. Nie mam mozliwości zapisu/zmiany kolejności, generowania nowych fiszek.
+
+ID: US-006
 Tytuł: Generowanie fiszek przy użyciu AI
 Opis: Jako zalogowany użytkownik chcę wkleić kawałek tekstu i za pomocą przycisku wygenerować propozycje fiszek, aby zaoszczędzić czas na ręcznym tworzeniu pytań i odpowiedzi.
 Kryteria akceptacji:
@@ -83,7 +120,9 @@ Kryteria akceptacji:
 - Po kliknięciu przycisku generowania aplikacja komunikuje się z API modelu LLM i wyświetla listę wygenerowanych propozycji fiszek do akceptacji przez użytkownika.
 - W przypadku problemów z API lub braku odpowiedzi modelu użytkownik zobaczy stosowny komunikat o błędzie.
 
-ID: US-004
+
+
+ID: US-007
 Tytuł: Przegląd i zatwierdzanie propozycji fiszek
 Opis: Jako zalogowany użytkownik chcę móc przeglądać wygenerowane fiszki i decydować, które z nich chcę dodać do mojego zestawu, aby zachować tylko przydatne pytania i odpowiedzi.
 Kryteria akceptacji:
@@ -91,7 +130,7 @@ Kryteria akceptacji:
 - Przy każdej fiszce znajduje się przycisk pozwalający na jej zatwierdzenie, edycję lub odrzucenie.
 - Po zatwierdzeniu wybranych fiszek użytkownik może kliknąć przycisk zapisu i dodać je do bazy danych.
 
-ID: US-005
+ID: US-008
 Tytuł: Edycja fiszek utworzonych ręcznie i generowanych przez AI
 Opis: Jako zalogowany użytkownik chcę edytować stworzone lub wygenerowane fiszki, aby poprawić ewentualne błędy lub dostosować pytania i odpowiedzi do własnych potrzeb.
 Kryteria akceptacji:
@@ -99,7 +138,7 @@ Kryteria akceptacji:
 - Każdą fiszkę można kliknąć i wejść w tryb edycji.
 - Zmiany są zapisywane w bazie danych po zatwierdzeniu.
 
-ID: US-006
+ID: US-009
 Tytuł: Usuwanie fiszek
 Opis: Jako zalogowany użytkownik chcę usuwać zbędne fiszki, aby zachować porządek w moim zestawie.
 Kryteria akceptacji:
@@ -107,7 +146,7 @@ Kryteria akceptacji:
 - Po wybraniu usuwania użytkownik musi potwierdzić operację, zanim fiszka zostanie trwale usunięta.
 - Fiszki zostają trwale usunięte z bazy danych po potwierdzeniu.
 
-ID: US-007
+ID: US-010
 Tytuł: Ręczne tworzenie fiszek
 Opis: Jako zalogowany użytkownik chcę ręcznie stworzyć fiszkę (określając przód i tył fiszki), aby dodawać własny materiał, który nie pochodzi z automatycznie generowanych treści.
 Kryteria akceptacji:
@@ -115,9 +154,7 @@ Kryteria akceptacji:
 - Naciśnięcie przycisku otwiera formularz z polami "Przód" i "Tył".
 - Po zapisaniu nowa fiszka pojawia się na liście.
 
-<!-- US-008 przeniesione poza MVP -->
-
-ID: US-009
+ID: US-011
 Tytuł: Bezpieczny dostęp i autoryzacja
 Opis: Jako zalogowany użytkownik chcę mieć pewność, że moje fiszki nie są dostępne dla innych użytkowników, aby zachować prywatność i bezpieczeństwo danych.
 Kryteria akceptacji:
