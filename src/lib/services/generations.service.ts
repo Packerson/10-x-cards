@@ -58,6 +58,7 @@ export async function createGeneration(
     return { error: { code: "duplicate_prompt" } }
   }
 
+  // TODO IMPLEMENT OPEN ROUTER API CALL HERE, and validate the response
   const cardProposals = buildMockProposals(promptText)
 
   const { data: inserted, error: insertError } = await supabase
