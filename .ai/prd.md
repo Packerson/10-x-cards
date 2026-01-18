@@ -46,6 +46,15 @@ Manualne tworzenie wysokiej jakości fiszek wymaga dużych nakładów czasu i wy
    - Współdzielenie fiszek między użytkownikami.
    - Rozbudowany system powiadomień.
    - Zaawansowane wyszukiwanie fiszek po słowach kluczowych.
+   - Plan rozbudowy po MVP:
+     - Użytkownik wybiera liczbę propozycji fiszek do wygenerowania.
+     - Model Kategoria: każdy użytkownik tworzy własne kategorie.
+     - Przypisywanie kategorii do pojedynczej fiszki lub całej generacji.
+     - Model Deck: każdy użytkownik tworzy własne talie.
+     - Widok edycji talii (m.in. zarządzanie kolejnością fiszek w talii).
+     - Planowanie sesji nauki:
+       - Wybór talii do nauki; kolejność losowa lub zgodna z kolejnością ustawioną przez użytkownika.
+       - Wybór kategorii do nauki; kolejność fiszek zawsze losowa.
 
 ## 5. Historyjki użytkowników
 

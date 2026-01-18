@@ -29,7 +29,7 @@ type CreateGenerationError =
   | { code: "duplicate_prompt" }
   | { code: "database_error"; details?: unknown }
 
-const DEFAULT_CARD_COUNT = 5
+const DEFAULT_CARD_COUNT = 10
 const CARD_PROPOSALS_RESPONSE_FORMAT: OpenRouterResponseFormat = {
   type: "json_schema",
   json_schema: {
@@ -78,7 +78,6 @@ export async function createGeneration(
 
   if (findError) {
     console.error("createGeneration: duplicate check failed", {
-      userId,
       promptHash,
       error: findError,
     })
@@ -153,7 +152,6 @@ export async function createGeneration(
 
   if (updateError || !updated) {
     console.error("createGeneration: update failed", {
-      userId,
       generationId: inserted.id,
       error: updateError,
     })

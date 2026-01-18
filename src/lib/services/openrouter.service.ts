@@ -92,7 +92,7 @@ const responseFormatSchema = z.object({
 const DEFAULT_ALLOWED_MODELS: OpenRouterModel[] = ["openai/gpt-4.1-mini"]
 
 const SYSTEM_MESSAGES: Record<UserLocale, string> = {
-  pl: "Jesteś asystentem, który generuje propozycje fiszek w języku polskim. Odpowiadaj tylko w JSON zgodnym ze schematem.",
+  pl: "Jesteś asystentem, który generuje propozycje fiszek w języku polskim. Odpowiadaj tylko w JSON zgodnym ze schematem. Wygenerowane fiszki powinny być jasne, przejrzyste i skuteczne. Fiszki powinny być związane z tematyką tekstu. Kada fiszka powinna zawierać front (pytanie/prompt) i back (odpowiedź/wyjaśnienie). Skup się na ważnych faktach, definicjach, pojęciach i relacjach.",
   en: "You are an AI assistant spiecialized in creating high-quality flashcards from provided test in english. generate concise, clear, and effective flashcards that capture key concepts and knowlege. Each flashcards should have a front(question/prompt) and back(answer/explanation. Focus on important facts, definitons, concepts, and relationships. ",
 }
 
@@ -137,7 +137,7 @@ export class OpenRouterService {
 
     this._apiKey = apiKey
     this._baseUrl = config.baseUrl ?? "https://openrouter.ai/api/v1"
-    this._timeoutMs = config.timeoutMs ?? 12000
+    this._timeoutMs = config.timeoutMs ?? 20000
     this._allowedModels = DEFAULT_ALLOWED_MODELS
     this.defaultModel = defaultModel
     this.defaultParams = {
