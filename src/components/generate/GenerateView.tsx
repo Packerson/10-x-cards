@@ -12,9 +12,8 @@ export function GenerateView() {
     generateProposals,
     handleProposalAction,
     handleProposalEdit,
+    handleBulkAction,
     saveAcceptedCards,
-    saveAllProposals,
-    clearAllProposals,
     dismissError,
     retryLastAction,
   } = useGenerateFlashcards()
@@ -64,9 +63,8 @@ export function GenerateView() {
             generationId={generationId}
             onProposalAction={handleProposalAction}
             onProposalEdit={handleProposalEdit}
-            onSaveAccepted={saveAcceptedCards}
-            onSaveAll={saveAllProposals}
-            onClearAll={clearAllProposals}
+            onBulkAction={handleBulkAction}
+            onSave={saveAcceptedCards}
             isSaving={isSaving}
           />
         )}

@@ -6,6 +6,9 @@ export type ProposalStatus = "pending" | "accepted" | "rejected" | "editing"
 // Akcja na pojedynczej propozycji
 export type ProposalAction = "accept" | "edit" | "reject" | "cancel_edit"
 
+// Akcja zbiorcza
+export type BulkActionType = "accept_all" | "reject_all"
+
 // Model propozycji z lokalnym stanem UI
 export interface ProposalViewModel {
   id: string // Lokalny UUID dla React keys
@@ -70,9 +73,8 @@ export interface ProposalSectionProps {
   generationId: number
   onProposalAction: (id: string, action: ProposalAction) => void
   onProposalEdit: (id: string, front: string, back: string) => void
-  onSaveAccepted: () => void
-  onSaveAll: () => void
-  onClearAll: () => void
+  onBulkAction: (action: BulkActionType) => void
+  onSave: () => void
   isSaving: boolean
 }
 
@@ -122,10 +124,8 @@ export interface CardActionsProps {
 
 // Props dla BulkActions
 export interface BulkActionsProps {
-  totalCount: number
   acceptedCount: number
-  onSaveAll: () => void
-  onClearAll: () => void
-  onSaveAccepted: () => void
+  onBulkAction: (action: BulkActionType) => void
+  onSave: () => void
   isSaving: boolean
 }

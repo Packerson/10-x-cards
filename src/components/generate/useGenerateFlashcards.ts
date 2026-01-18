@@ -5,6 +5,7 @@ import type {
   ProposalViewModel,
   ProposalAction,
   GenerateErrorType,
+  BulkActionType,
 } from "./types"
 import type { CardProposalDTO } from "@/types"
 import { createGeneration } from "@/lib/api/generations"
@@ -54,6 +55,7 @@ export interface UseGenerateFlashcardsReturn {
   generateProposals: () => Promise<void>
   handleProposalAction: (id: string, action: ProposalAction) => void
   handleProposalEdit: (id: string, front: string, back: string) => void
+  handleBulkAction: (action: BulkActionType) => void
   saveAcceptedCards: () => Promise<void>
   saveAllProposals: () => Promise<void>
   clearAllProposals: () => void
@@ -161,6 +163,18 @@ export function useGenerateFlashcards(): UseGenerateFlashcardsReturn {
           source: wasEdited ? "ai_edited" : p.source,
           status: "accepted" as const,
         }
+      }),
+    }))
+  }, [])
+
+  const handleBulkAction = useCallback((action: BulkActionType) => {
+    setState((prev) => ({
+      ...prev,
+      proposals: prev.proposals.map((p) => {
+        if (p.status === "editing") return p
+        if (action === "accept_all") return { ...p, status: "accepted" as const }
+        if (action === "reject_all") return { ...p, status: "rejected" as const }
+        return p
       }),
     }))
   }, [])
@@ -296,6 +310,7 @@ export function useGenerateFlashcards(): UseGenerateFlashcardsReturn {
     generateProposals,
     handleProposalAction,
     handleProposalEdit,
+    handleBulkAction,
     saveAcceptedCards,
     saveAllProposals,
     clearAllProposals,

@@ -9,9 +9,14 @@ import type {
   GenerationErrorsListQuery,
   GenerationErrorsListResponseDTO,
   GenerationsListQuery,
-  GenerationsListResponseDTO
+  GenerationsListResponseDTO,
+  UserLocale
 } from "../../types.ts"
+import type { Json } from "../../db/database.types.ts"
 import { createGenerationSchema } from "../validators/generations.ts"
+import { OpenRouterService, buildSystemMessage } from "./openrouter.service.ts"
+import type { OpenRouterResponseFormat } from "../openrouter.types.ts"
+import { getProfile } from "./profile.service.ts"
 
 
 interface CreateGenerationDeps {
@@ -24,7 +29,33 @@ type CreateGenerationError =
   | { code: "duplicate_prompt" }
   | { code: "database_error"; details?: unknown }
 
-const DEFAULT_MODEL = "gpt-4.1"
+const DEFAULT_CARD_COUNT = 5
+const CARD_PROPOSALS_RESPONSE_FORMAT: OpenRouterResponseFormat = {
+  type: "json_schema",
+  json_schema: {
+    name: "flashcards_response",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        cards: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              front: { type: "string" },
+              back: { type: "string" },
+            },
+            required: ["front", "back"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["cards"],
+      additionalProperties: false,
+    },
+  },
+}
 
 export async function createGeneration(
   { supabase, userId }: CreateGenerationDeps,
@@ -58,8 +89,7 @@ export async function createGeneration(
     return { error: { code: "duplicate_prompt" } }
   }
 
-  // TODO IMPLEMENT OPEN ROUTER API CALL HERE, and validate the response
-  const cardProposals = buildMockProposals(promptText)
+  const openRouter = new OpenRouterService()
 
   const { data: inserted, error: insertError } = await supabase
     .from("generations")
@@ -70,11 +100,11 @@ export async function createGeneration(
       // MVP: "processing" oznacza etap propozycji (w mocku zwracamy je od razu).
       // Po zapisaniu zaakceptowanych/zmodyfikowanych kart w POST /api/cards ustawiamy "completed".
       status: "processing",
-      total_generated: cardProposals.length,
+      total_generated: 0,
       total_accepted: 0,
       total_rejected: 0,
-      model: DEFAULT_MODEL,
-      model_settings: {},
+      model: openRouter.defaultModel,
+      model_settings: (openRouter.defaultParams ?? {}) as Json,
     })
     .select("id, prompt_text, total_generated, status")
     .single()
@@ -88,47 +118,100 @@ export async function createGeneration(
     return { error: { code: "database_error", details: insertError?.message } }
   }
 
+  let cardProposals: CardProposalDTO[] = []
   try {
-    return {
-      data: {
-        ...inserted,
-        card_proposals: cardProposals,
-      },
+    const locale = await resolveLocale({ supabase, userId })
+    const structured = await openRouter.createStructuredCompletion<{
+      cards: Array<{ front: string; back: string }>
+    }>({
+      systemMessage: buildSystemPrompt(locale),
+      userMessage: promptText,
+      model: openRouter.defaultModel,
+      responseFormat: CARD_PROPOSALS_RESPONSE_FORMAT,
+    })
+
+    cardProposals = normalizeCardProposals(structured?.cards)
+    if (cardProposals.length === 0) {
+      throw new Error("empty_card_proposals")
     }
   } catch (processingError) {
     await logGenerationError(
       supabase,
       inserted.id,
       "processing_error",
-      processingError instanceof Error
-        ? processingError.message
-        : "unknown_processing_error",
+      processingError instanceof Error ? processingError.message : "unknown_processing_error",
     )
     return { error: { code: "database_error", details: "processing_failed" } }
   }
-}
 
-// build 5 mock proposals
-function buildMockProposals(promptText: string): CardProposalDTO[] {
-  const sentences = promptText
-    .split(/\n+/)
-    .map((part) => part.trim())
-    .filter(Boolean)
+  const { data: updated, error: updateError } = await supabase
+    .from("generations")
+    .update({ total_generated: cardProposals.length })
+    .eq("id", inserted.id)
+    .select("id, prompt_text, total_generated, status")
+    .single()
 
-  if (sentences.length === 0) {
-    const fallback = promptText.trim().slice(0, 240) || "Uzupełnij treść pytania"
-    return Array.from({ length: 5 }, (_, index) => ({
-      front: `Na podstawie tekstu ${index + 1}: ${fallback}`,
-      back: `Odpowiedź do uzupełnienia ${index + 1}`,
-      source: "ai_created",
-    }))
+  if (updateError || !updated) {
+    console.error("createGeneration: update failed", {
+      userId,
+      generationId: inserted.id,
+      error: updateError,
+    })
+    return { error: { code: "database_error", details: updateError?.message } }
   }
 
-  return sentences.slice(0, 5).map((sentence, index) => ({
-    front: `Kluczowa teza ${index + 1}: ${sentence.slice(0, 160)}`,
-    back: `Wyjaśnienie: ${sentence.slice(0, 200)}`,
-    source: "ai_created",
-  }))
+  return {
+    data: {
+      ...updated,
+      card_proposals: cardProposals,
+    },
+  }
+}
+
+function normalizeCardProposals(
+  cards: Array<{ front?: string; back?: string }> | undefined,
+): CardProposalDTO[] {
+  if (!cards || !Array.isArray(cards)) {
+    return []
+  }
+
+  return cards
+    .map((card) => ({
+      front: (card.front ?? "").trim(),
+      back: (card.back ?? "").trim(),
+      source: "ai_created" as CardProposalDTO["source"],
+    }))
+    .filter((card) => card.front.length > 0 && card.back.length > 0)
+}
+
+function buildSystemPrompt(locale: UserLocale) {
+  if (locale === "en") {
+    return `${buildSystemMessage(locale)} Generate exactly ${DEFAULT_CARD_COUNT} flashcards from the provided text.`
+  }
+
+  return `${buildSystemMessage(locale)} Wygeneruj dokładnie ${DEFAULT_CARD_COUNT} fiszek na podstawie dostarczonego tekstu.`
+}
+
+async function resolveLocale({
+  supabase,
+  userId,
+}: {
+  supabase: SupabaseClient
+  userId: string
+}): Promise<UserLocale> {
+  const profile = await getProfile({ supabase, userId })
+  if (profile.data?.locale) {
+    return profile.data.locale
+  }
+
+  if (profile.error) {
+    console.error("createGeneration: failed to resolve locale, fallback to pl", {
+      userId,
+      error: profile.error,
+    })
+  }
+
+  return "pl"
 }
 
 async function logGenerationError(
