@@ -58,6 +58,7 @@ export async function createGeneration(
     return { error: { code: "duplicate_prompt" } }
   }
 
+  // TODO IMPLEMENT OPEN ROUTER API CALL HERE, and validate the response
   const cardProposals = buildMockProposals(promptText)
 
   const { data: inserted, error: insertError } = await supabase
@@ -107,6 +108,7 @@ export async function createGeneration(
   }
 }
 
+// build 5 mock proposals
 function buildMockProposals(promptText: string): CardProposalDTO[] {
   const sentences = promptText
     .split(/\n+/)
@@ -115,16 +117,14 @@ function buildMockProposals(promptText: string): CardProposalDTO[] {
 
   if (sentences.length === 0) {
     const fallback = promptText.trim().slice(0, 240) || "Uzupełnij treść pytania"
-    return [
-      {
-        front: `Na podstawie tekstu: ${fallback}`,
-        back: "Odpowiedź do uzupełnienia",
-        source: "ai_created",
-      },
-    ]
+    return Array.from({ length: 5 }, (_, index) => ({
+      front: `Na podstawie tekstu ${index + 1}: ${fallback}`,
+      back: `Odpowiedź do uzupełnienia ${index + 1}`,
+      source: "ai_created",
+    }))
   }
 
-  return sentences.slice(0, 3).map((sentence, index) => ({
+  return sentences.slice(0, 5).map((sentence, index) => ({
     front: `Kluczowa teza ${index + 1}: ${sentence.slice(0, 160)}`,
     back: `Wyjaśnienie: ${sentence.slice(0, 200)}`,
     source: "ai_created",

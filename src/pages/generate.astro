@@ -1,0 +1,10 @@
+---
+import Layout from "@/layouts/Layout.astro"
+import { GenerateView } from "@/components/generate"
+
+export const prerender = false
+---
+
+<Layout title="Generuj fiszki | 10x Cards">
+  <GenerateView client:load />
+</Layout>
