@@ -10,8 +10,6 @@ export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKe
 
 export type SupabaseClient = typeof supabaseClient
 
-export const DEFAULT_USER_ID = "5047581d-65c0-41f7-94fb-47c453987921"
-
 const baseCookieOptions: CookieOptionsWithName = {
   path: "/",
   httpOnly: true,

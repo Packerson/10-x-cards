@@ -3,6 +3,7 @@ import { defineMiddleware } from "astro:middleware"
 import { createSupabaseServerInstance } from "../db/supabase.client.ts"
 
 const AUTH_LOGOUT_PATH = "/auth/logout"
+const AUTH_NO_REDIRECT_PATHS = new Set<string>(["/auth/logout", "/auth/reset-password"])
 
 export const onRequest = defineMiddleware(async ({ cookies, request, url, locals, redirect }, next) => {
   const supabase = createSupabaseServerInstance({
@@ -32,7 +33,7 @@ export const onRequest = defineMiddleware(async ({ cookies, request, url, locals
     locals.isAuthenticated = false
   }
 
-  if (locals.isAuthenticated && url.pathname.startsWith("/auth/")) {
+  if (locals.isAuthenticated && url.pathname.startsWith("/auth/") && !AUTH_NO_REDIRECT_PATHS.has(url.pathname)) {
     return redirect("/")
   }
 

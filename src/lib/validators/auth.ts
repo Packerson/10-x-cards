@@ -26,5 +26,42 @@ export const authRegisterSchema = z
     message: "Hasła muszą być zgodne.",
   })
 
+export const authForgotPasswordSchema = z.object({
+  email: z.string().trim().email({ message: "Podaj poprawny adres email." }),
+})
+
+export const authResetPasswordSchema = z
+  .object({
+    newPassword: z
+      .string()
+      .min(PASSWORD_MIN_LENGTH, {
+        message: `Hasło musi mieć co najmniej ${PASSWORD_MIN_LENGTH} znaków.`,
+      })
+      .regex(SPECIAL_CHAR_PATTERN, {
+        message: "Hasło musi zawierać co najmniej jeden znak specjalny.",
+      }),
+    newPasswordConfirm: z.string().min(1, { message: "Potwierdzenie hasła jest wymagane." }),
+    accessToken: z.string().min(1, { message: "Brak tokenu resetu." }).optional(),
+    refreshToken: z.string().min(1, { message: "Brak tokenu odświeżenia." }).optional(),
+    code: z.string().min(1, { message: "Brak kodu resetu." }).optional(),
+  })
+  .refine((values) => values.newPassword === values.newPasswordConfirm, {
+    path: ["newPasswordConfirm"],
+    message: "Hasła muszą być zgodne.",
+  })
+  .superRefine((values, ctx) => {
+    const hasTokens = Boolean(values.accessToken && values.refreshToken)
+    const hasCode = Boolean(values.code)
+    if (!hasTokens && !hasCode) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["code"],
+        message: "Brak danych resetu.",
+      })
+    }
+  })
+
 export type AuthLoginInput = z.infer<typeof authLoginSchema>
 export type AuthRegisterInput = z.infer<typeof authRegisterSchema>
+export type AuthForgotPasswordInput = z.infer<typeof authForgotPasswordSchema>
+export type AuthResetPasswordInput = z.infer<typeof authResetPasswordSchema>

@@ -56,6 +56,18 @@ export interface AuthRegisterDTO {
   passwordConfirm: string
 }
 
+export interface AuthForgotPasswordDTO {
+  email: string
+}
+
+export interface AuthResetPasswordDTO {
+  newPassword: string
+  newPasswordConfirm: string
+  accessToken?: string
+  refreshToken?: string
+  code?: string
+}
+
 export interface AuthUserDTO {
   id: string
   email: string | null

@@ -1,5 +1,6 @@
-import { useId, useMemo, useState } from "react"
+import { useCallback, useId, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { parseAuthErrorResponse } from "@/lib/api/auth-errors"
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -14,9 +15,55 @@ export function ForgotPasswordForm() {
   const emailId = useId()
   const [email, setEmail] = useState("")
   const [emailError, setEmailError] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const canSubmit = useMemo(() => validateEmail(email) === null, [email])
+
+  const handleSubmit = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      const nextEmailError = validateEmail(email)
+      setEmailError(nextEmailError)
+      setFormError(null)
+      if (nextEmailError) return
+
+      setIsSubmitting(true)
+      try {
+        const response = await fetch("/api/auth/forgot-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.trim(),
+          }),
+        })
+
+        if (!response.ok) {
+          const { errorCode, fieldErrors } = await parseAuthErrorResponse(response)
+          if (errorCode === "validation_error") {
+            if (fieldErrors?.email?.[0]) {
+              setEmailError(fieldErrors.email[0])
+            } else {
+              const validation = validateEmail(email)
+              if (validation) setEmailError(validation)
+            }
+            setFormError("Uzupełnij poprawnie wymagane pola.")
+          } else {
+            setFormError("Nie udało się wysłać linku. Spróbuj ponownie.")
+          }
+          return
+        }
+
+        setSubmitted(true)
+      } catch {
+        setFormError("Nie udało się połączyć z serwerem.")
+      } finally {
+        setIsSubmitting(false)
+      }
+    },
+    [email],
+  )
 
   return (
     <section className="mx-auto w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-sm">
@@ -27,16 +74,7 @@ export function ForgotPasswordForm() {
         </p>
       </header>
 
-      <form
-        className="mt-6 space-y-4"
-        onSubmit={(event) => {
-          event.preventDefault()
-          const nextEmailError = validateEmail(email)
-          setEmailError(nextEmailError)
-          if (nextEmailError) return
-          setSubmitted(true)
-        }}
-      >
+      <form className="mt-6 space-y-4" onSubmit={handleSubmit} aria-busy={isSubmitting}>
         <div className="space-y-1">
           <label htmlFor={emailId} className="text-sm font-medium text-foreground">
             Email
@@ -53,6 +91,7 @@ export function ForgotPasswordForm() {
               setEmail(event.target.value)
               setEmailError(null)
               setSubmitted(false)
+              setFormError(null)
             }}
             aria-invalid={Boolean(emailError)}
             aria-describedby={emailError ? `${emailId}-error` : undefined}
@@ -64,7 +103,7 @@ export function ForgotPasswordForm() {
           )}
         </div>
 
-        {submitted && (
+        {submitted && !formError && (
           <div
             role="status"
             className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
@@ -73,8 +112,14 @@ export function ForgotPasswordForm() {
           </div>
         )}
 
-        <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>
-          Wyślij link resetujący
+        {formError && (
+          <p role="alert" className="text-sm text-destructive">
+            {formError}
+          </p>
+        )}
+
+        <Button type="submit" size="lg" className="w-full" disabled={!canSubmit || isSubmitting}>
+          {isSubmitting ? "Wysyłanie..." : "Wyślij link resetujący"}
         </Button>
       </form>
 

@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro"
 
-import { DEFAULT_USER_ID } from "../../../db/supabase.client"
 import { deleteGenerationById, getGenerationById } from "../../../lib/services/generations.service"
 import { generationIdParamSchema } from "../../../lib/validators/generations"
 
@@ -24,8 +23,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     )
   }
 
-  // MVP: brak auth — docelowo userId powinno pochodzić z sesji (wtedy brak user → 401).
-  const userId = DEFAULT_USER_ID
+  const userId = (locals as any)?.userId
 
   const { data, error } = await getGenerationById({ supabase, userId }, validation.data.id)
 
@@ -67,9 +65,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     )
   }
 
-  // MVP: brak auth — docelowo userId powinno pochodzić z sesji (wtedy brak user → 401).
-  const userId = DEFAULT_USER_ID
-
+  const userId = (locals as any)?.userId
   const { error } = await deleteGenerationById({ supabase, userId }, validation.data.id)
 
   if (error) {
