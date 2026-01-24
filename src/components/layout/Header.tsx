@@ -8,20 +8,21 @@ import { UserMenu } from "./UserMenu"
 
 interface HeaderProps {
   currentPath: string
+  initialIsAuthenticated?: boolean
 }
 
-export function Header({ currentPath }: HeaderProps) {
+export function Header({ currentPath, initialIsAuthenticated }: HeaderProps) {
   const { status, profile } = useProfile()
 
-  const isAuthenticated = status === "authenticated"
+  const isAuthenticated =
+    status === "authenticated" ? true : status === "unauthenticated" ? false : initialIsAuthenticated ?? false
 
   const navItems = useMemo<HeaderNavItem[]>(() => {
-    // Uwaga: w aktualnym repo istnieją tylko strony: /, /generate, /cards.
     // Elementy typu "Historia" są zgodne z planem, ale route nie istnieje -> disabled.
     if (!isAuthenticated) {
       return [
-        { href: "/login", label: "Zaloguj się", disabled: true },
-        { href: "/register", label: "Zarejestruj", disabled: true },
+        { href: "/auth/login", label: "Zaloguj się" },
+        { href: "/auth/register", label: "Zarejestruj" },
       ]
     }
 

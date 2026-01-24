@@ -69,17 +69,13 @@ export function UserMenu({ profile, disabled = false }: UserMenuProps) {
           Mój profil
         </button>
 
-        {/* Brak prawdziwego auth/logout w aktualnym MVP — decyzja zależy od Ciebie */}
-        <button
-          type="button"
-          className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
+        <a
+          href="/auth/logout"
+          className="block w-full px-3 py-2 text-left text-sm hover:bg-muted"
           onClick={() => close()}
-          disabled
-          aria-disabled="true"
-          title="Wkrótce"
         >
           Wyloguj się
-        </button>
+        </a>
       </div>
     </details>
   )

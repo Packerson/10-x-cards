@@ -1,0 +1,33 @@
+---
+import Layout from "@/layouts/Layout.astro"
+import { createSupabaseServerInstance } from "@/db/supabase.client"
+
+export const prerender = false
+
+const supabase = createSupabaseServerInstance({
+  cookies: Astro.cookies,
+  headers: Astro.request.headers,
+  requestUrl: Astro.request.url,
+})
+
+const { error } = await supabase.auth.signOut()
+
+if (!error) {
+  return Astro.redirect("/")
+}
+---
+
+<Layout title="Wylogowanie | 10x Cards">
+  <section class="mx-auto w-full max-w-md rounded-lg border border-border bg-card p-6 text-center shadow-sm">
+    <h1 class="text-2xl font-semibold tracking-tight">Wylogowanie</h1>
+    <p class="mt-2 text-sm text-muted-foreground">
+      Nie udało się wylogować. Spróbuj ponownie za chwilę.
+    </p>
+    <a
+      href="/"
+      class="mt-6 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
+    >
+      Wróć na stronę główną
+    </a>
+  </section>
+</Layout>

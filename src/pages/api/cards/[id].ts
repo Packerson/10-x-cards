@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro"
 
-import { DEFAULT_USER_ID } from "../../../db/supabase.client"
 import { deleteCard, getCardById, getCardForUpdate, updateCard } from "../../../lib/services/cards.service"
 import { cardIdParamSchema, updateCardSchema } from "../../../lib/validators/cards"
 
@@ -24,8 +23,8 @@ export const GET: APIRoute = async ({ params, locals }) => {
     })
   }
 
-  // MVP: brak auth — docelowo userId powinno pochodzić z sesji (wtedy brak user → 401).
-  const userId = DEFAULT_USER_ID
+
+  const userId = (locals as any)?.userId
 
   const { data, error } = await getCardById({ supabase, userId }, validation.data.id)
 
@@ -67,8 +66,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     })
   }
 
-  // MVP: brak auth — docelowo userId powinno pochodzić z sesji (wtedy brak user → 401).
-  const userId = DEFAULT_USER_ID
+  const userId = (locals as any)?.userId
 
   let jsonBody: unknown
   try {
@@ -177,8 +175,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     })
   }
 
-  // MVP: brak auth — docelowo userId powinno pochodzić z sesji (wtedy brak user → 401).
-  const userId = DEFAULT_USER_ID
+  const userId = (locals as any)?.userId
 
   const { data, error } = await deleteCard({ supabase, userId }, validation.data.id)
 

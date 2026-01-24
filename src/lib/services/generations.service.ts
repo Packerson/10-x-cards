@@ -9,9 +9,23 @@ import type {
   GenerationErrorsListQuery,
   GenerationErrorsListResponseDTO,
   GenerationsListQuery,
-  GenerationsListResponseDTO
+  GenerationsListResponseDTO,
+  UserLocale
 } from "../../types.ts"
+import type { Json } from "../../db/database.types.ts"
 import { createGenerationSchema } from "../validators/generations.ts"
+import {
+  OpenRouterConfigError,
+  OpenRouterNetworkError,
+  OpenRouterRateLimitError,
+  OpenRouterRequestError,
+  OpenRouterResponseSchemaError,
+  OpenRouterService,
+  OpenRouterValidationError,
+  buildSystemMessage,
+} from "./openrouter.service.ts"
+import type { OpenRouterParams, OpenRouterResponseFormat } from "../openrouter.types.ts"
+import { getProfile } from "./profile.service.ts"
 
 
 interface CreateGenerationDeps {
@@ -22,9 +36,45 @@ interface CreateGenerationDeps {
 type CreateGenerationError =
   | { code: "validation_error"; details: unknown }
   | { code: "duplicate_prompt" }
+  | { code: "rate_limit"; details?: unknown; retryAfterMs?: number }
+  | { code: "config_error"; details?: unknown }
+  | { code: "openrouter_error"; details?: unknown }
   | { code: "database_error"; details?: unknown }
 
-const DEFAULT_MODEL = "gpt-4.1"
+const DEFAULT_CARD_COUNT = 10
+const DEFAULT_MODEL = "openai/gpt-4.1-mini"
+const DEFAULT_MODEL_SETTINGS: OpenRouterParams = {
+  temperature: 0.7,
+  max_tokens: 800,
+  top_p: 0.9,
+  presence_penalty: 0,
+}
+const CARD_PROPOSALS_RESPONSE_FORMAT: OpenRouterResponseFormat = {
+  type: "json_schema",
+  json_schema: {
+    name: "flashcards_response",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        cards: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              front: { type: "string" },
+              back: { type: "string" },
+            },
+            required: ["front", "back"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["cards"],
+      additionalProperties: false,
+    },
+  },
+}
 
 export async function createGeneration(
   { supabase, userId }: CreateGenerationDeps,
@@ -47,7 +97,6 @@ export async function createGeneration(
 
   if (findError) {
     console.error("createGeneration: duplicate check failed", {
-      userId,
       promptHash,
       error: findError,
     })
@@ -58,9 +107,6 @@ export async function createGeneration(
     return { error: { code: "duplicate_prompt" } }
   }
 
-  // TODO IMPLEMENT OPEN ROUTER API CALL HERE, and validate the response
-  const cardProposals = buildMockProposals(promptText)
-
   const { data: inserted, error: insertError } = await supabase
     .from("generations")
     .insert({
@@ -70,11 +116,11 @@ export async function createGeneration(
       // MVP: "processing" oznacza etap propozycji (w mocku zwracamy je od razu).
       // Po zapisaniu zaakceptowanych/zmodyfikowanych kart w POST /api/cards ustawiamy "completed".
       status: "processing",
-      total_generated: cardProposals.length,
+      total_generated: 0,
       total_accepted: 0,
       total_rejected: 0,
       model: DEFAULT_MODEL,
-      model_settings: {},
+      model_settings: DEFAULT_MODEL_SETTINGS as Json,
     })
     .select("id, prompt_text, total_generated, status")
     .single()
@@ -88,47 +134,151 @@ export async function createGeneration(
     return { error: { code: "database_error", details: insertError?.message } }
   }
 
+  let cardProposals: CardProposalDTO[] = []
   try {
-    return {
-      data: {
-        ...inserted,
-        card_proposals: cardProposals,
-      },
+    const openRouter = new OpenRouterService()
+    const locale = await resolveLocale({ supabase, userId })
+    const structured = await openRouter.createStructuredCompletion<{
+      cards: Array<{ front: string; back: string }>
+    }>({
+      systemMessage: buildSystemPrompt(locale),
+      userMessage: promptText,
+      model: openRouter.defaultModel,
+      responseFormat: CARD_PROPOSALS_RESPONSE_FORMAT,
+    })
+
+    cardProposals = normalizeCardProposals(structured?.cards)
+    if (cardProposals.length === 0) {
+      throw new Error("empty_card_proposals")
     }
   } catch (processingError) {
-    await logGenerationError(
-      supabase,
-      inserted.id,
-      "processing_error",
-      processingError instanceof Error
-        ? processingError.message
-        : "unknown_processing_error",
-    )
-    return { error: { code: "database_error", details: "processing_failed" } }
+    const errorMessage =
+      processingError instanceof Error ? processingError.message : "unknown_processing_error"
+    const mappedError = mapOpenRouterError(processingError, errorMessage)
+
+    await logGenerationError(supabase, inserted.id, mappedError.logCode, errorMessage)
+
+    return { error: mappedError.apiError }
+  }
+
+  const { data: updated, error: updateError } = await supabase
+    .from("generations")
+    .update({ total_generated: cardProposals.length })
+    .eq("id", inserted.id)
+    .select("id, prompt_text, total_generated, status")
+    .single()
+
+  if (updateError || !updated) {
+    console.error("createGeneration: update failed", {
+      generationId: inserted.id,
+      error: updateError,
+    })
+    return { error: { code: "database_error", details: updateError?.message } }
+  }
+
+  return {
+    data: {
+      ...updated,
+      card_proposals: cardProposals,
+    },
   }
 }
 
-// build 5 mock proposals
-function buildMockProposals(promptText: string): CardProposalDTO[] {
-  const sentences = promptText
-    .split(/\n+/)
-    .map((part) => part.trim())
-    .filter(Boolean)
-
-  if (sentences.length === 0) {
-    const fallback = promptText.trim().slice(0, 240) || "Uzupełnij treść pytania"
-    return Array.from({ length: 5 }, (_, index) => ({
-      front: `Na podstawie tekstu ${index + 1}: ${fallback}`,
-      back: `Odpowiedź do uzupełnienia ${index + 1}`,
-      source: "ai_created",
-    }))
+function mapOpenRouterError(
+  error: unknown,
+  fallbackMessage: string,
+): { apiError: CreateGenerationError; logCode: string } {
+  if (error instanceof OpenRouterValidationError) {
+    return {
+      apiError: { code: "validation_error", details: error.message },
+      logCode: "validation_error",
+    }
   }
 
-  return sentences.slice(0, 5).map((sentence, index) => ({
-    front: `Kluczowa teza ${index + 1}: ${sentence.slice(0, 160)}`,
-    back: `Wyjaśnienie: ${sentence.slice(0, 200)}`,
-    source: "ai_created",
-  }))
+  if (error instanceof OpenRouterConfigError) {
+    return { apiError: { code: "config_error", details: error.message }, logCode: "config_error" }
+  }
+
+  if (error instanceof OpenRouterRateLimitError) {
+    return {
+      apiError: {
+        code: "rate_limit",
+        details: error.message,
+        retryAfterMs: error.retryAfterMs,
+      },
+      logCode: "rate_limit_error",
+    }
+  }
+
+  if (error instanceof OpenRouterRequestError) {
+    return {
+      apiError: {
+        code: "openrouter_error",
+        details: {
+          status: error.status,
+          message: error.message,
+          details: error.details,
+        },
+      },
+      logCode: "request_error",
+    }
+  }
+
+  if (error instanceof OpenRouterResponseSchemaError) {
+    return { apiError: { code: "openrouter_error", details: error.message }, logCode: "schema_error" }
+  }
+
+  if (error instanceof OpenRouterNetworkError) {
+    return { apiError: { code: "openrouter_error", details: error.message }, logCode: "network_error" }
+  }
+
+  return { apiError: { code: "openrouter_error", details: fallbackMessage }, logCode: "unknown_error" }
+}
+
+function normalizeCardProposals(
+  cards: Array<{ front?: string; back?: string }> | undefined,
+): CardProposalDTO[] {
+  if (!cards || !Array.isArray(cards)) {
+    return []
+  }
+
+  return cards
+    .map((card) => ({
+      front: (card.front ?? "").trim(),
+      back: (card.back ?? "").trim(),
+      source: "ai_created" as CardProposalDTO["source"],
+    }))
+    .filter((card) => card.front.length > 0 && card.back.length > 0)
+}
+
+function buildSystemPrompt(locale: UserLocale) {
+  if (locale === "en") {
+    return `${buildSystemMessage(locale)} Generate exactly ${DEFAULT_CARD_COUNT} flashcards from the provided text.`
+  }
+
+  return `${buildSystemMessage(locale)} Wygeneruj dokładnie ${DEFAULT_CARD_COUNT} fiszek na podstawie dostarczonego tekstu.`
+}
+
+async function resolveLocale({
+  supabase,
+  userId,
+}: {
+  supabase: SupabaseClient
+  userId: string
+}): Promise<UserLocale> {
+  const profile = await getProfile({ supabase, userId })
+  if (profile.data?.locale) {
+    return profile.data.locale
+  }
+
+  if (profile.error) {
+    console.error("createGeneration: failed to resolve locale, fallback to pl", {
+      userId,
+      error: profile.error,
+    })
+  }
+
+  return "pl"
 }
 
 async function logGenerationError(

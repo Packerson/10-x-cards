@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro"
 
-import { DEFAULT_USER_ID, supabaseClient } from "../../db/supabase.client"
+import { supabaseClient } from "../../db/supabase.client"
 import { listGenerations } from "../../lib/services/generations.service"
 import { createGeneration } from "../../lib/services/generations.service"
 import { generationsListQuerySchema } from "../../lib/validators/generations"
@@ -22,8 +22,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
   }
 
   const supabase = (locals as any)?.supabase ?? supabaseClient
-
-  const userId = DEFAULT_USER_ID
+  const userId = (locals as any)?.userId
 
   const { data, error } = await listGenerations({ supabase, userId }, validation.data)
 
@@ -53,8 +52,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     )
   }
 
-  const userId = DEFAULT_USER_ID
-
+  const userId = (locals as any)?.userId
   const supabase = (locals as any)?.supabase ?? supabaseClient
 
   const { data, error } = await createGeneration({ supabase, userId }, payload as any)
@@ -69,6 +67,27 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (error.code === "duplicate_prompt") {
       return new Response(JSON.stringify({ error: "duplicate_prompt" }), { status: 409 })
+    }
+
+    if (error.code === "rate_limit") {
+      const headers = new Headers()
+      if (typeof error.retryAfterMs === "number") {
+        headers.set("Retry-After", Math.ceil(error.retryAfterMs / 1000).toString())
+      }
+      return new Response(JSON.stringify({ error: "rate_limit" }), { status: 429, headers })
+    }
+
+    if (error.code === "config_error") {
+      return new Response(
+        JSON.stringify({ error: "server_error", details: "openrouter_not_configured" }),
+        { status: 500 },
+      )
+    }
+
+    if (error.code === "openrouter_error") {
+      return new Response(JSON.stringify({ error: "openrouter_error", details: error.details }), {
+        status: 502,
+      })
     }
 
     return new Response(

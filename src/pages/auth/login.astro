@@ -1,0 +1,15 @@
+---
+import Layout from "@/layouts/Layout.astro"
+import { LoginForm } from "@/components/auth"
+
+export const prerender = false
+
+const { isAuthenticated } = Astro.locals
+if (isAuthenticated) {
+  return Astro.redirect("/")
+}
+---
+
+<Layout title="Zaloguj się | 10x Cards">
+  <LoginForm client:load />
+</Layout>

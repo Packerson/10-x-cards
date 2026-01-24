@@ -64,13 +64,12 @@ export function MobileMenu({
               >
                 Mój profil
               </span>
-              <span
-                className="text-sm text-muted-foreground/70"
-                aria-disabled="true"
-                title="Wkrótce"
-              >
-                Wyloguj
-              </span>
+              <NavLink
+                href="/auth/logout"
+                label="Wyloguj"
+                currentPath={currentPath}
+                onNavigate={close}
+              />
             </>
           )}
         </nav>

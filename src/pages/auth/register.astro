@@ -1,0 +1,10 @@
+---
+import Layout from "@/layouts/Layout.astro"
+import { RegisterForm } from "@/components/auth"
+
+export const prerender = false
+---
+
+<Layout title="Zarejestruj się | 10x Cards">
+  <RegisterForm client:load />
+</Layout>

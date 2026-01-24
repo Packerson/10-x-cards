@@ -21,7 +21,11 @@ const { title = "10x Astro Starter" } = Astro.props;
   </head>
   <body>
     <div class="min-h-screen bg-background">
-      <Header client:load currentPath={Astro.url.pathname} />
+      <Header
+        client:load
+        currentPath={Astro.url.pathname}
+        initialIsAuthenticated={Astro.locals.isAuthenticated}
+      />
       <main class="container mx-auto max-w-6xl px-4 py-8">
         <slot />
       </main>

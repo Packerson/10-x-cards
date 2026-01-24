@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro"
 
-import { DEFAULT_USER_ID, supabaseClient } from "../../db/supabase.client"
+import { supabaseClient } from "../../db/supabase.client"
 import { createCards, listCards } from "../../lib/services/cards.service"
 import { cardsListQuerySchema, createCardsSchema } from "../../lib/validators/cards"
 
@@ -21,7 +21,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
   }
 
   const supabase = (locals as any)?.supabase ?? supabaseClient
-  const userId = DEFAULT_USER_ID // TODO: zastąpić realnym userId po wdrożeniu auth
+  const userId = (locals as any)?.userId
 
   const { data, error } = await listCards({ supabase, userId }, validation.data)
 
@@ -93,7 +93,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   )
 
   const supabase = (locals as any)?.supabase ?? supabaseClient
-  const userId = DEFAULT_USER_ID
+  const userId = (locals as any)?.userId
 
   let generationsForRequest: Array<{ id: number; total_generated: number | null }> | null = null
 

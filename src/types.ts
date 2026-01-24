@@ -43,6 +43,35 @@ export interface ListResponse<TItem> {
 }
 
 /**
+ * --- Auth ---
+ */
+export interface AuthLoginDTO {
+  email: string
+  password: string
+}
+
+export interface AuthRegisterDTO {
+  email: string
+  password: string
+  passwordConfirm: string
+}
+
+export interface AuthForgotPasswordDTO {
+  email: string
+}
+
+export interface AuthResetPasswordDTO {
+  newPassword: string
+  newPasswordConfirm: string
+  code: string
+}
+
+export interface AuthUserDTO {
+  id: string
+  email: string | null
+}
+
+/**
  * --- Generations ---
  */
 export type CardProposalDTO = Pick<CardEntity, "front" | "back" | "source">

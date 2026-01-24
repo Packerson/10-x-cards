@@ -8,9 +8,8 @@ export function ProposalSection({
   proposals,
   onProposalAction,
   onProposalEdit,
-  onSaveAccepted,
-  onSaveAll,
-  onClearAll,
+  onBulkAction,
+  onSave,
   isSaving,
 }: ProposalSectionProps) {
   const stats = useMemo(() => {
@@ -40,11 +39,9 @@ export function ProposalSection({
       </div>
 
       <BulkActions
-        totalCount={stats.total}
         acceptedCount={stats.accepted}
-        onSaveAll={onSaveAll}
-        onClearAll={onClearAll}
-        onSaveAccepted={onSaveAccepted}
+        onBulkAction={onBulkAction}
+        onSave={onSave}
         isSaving={isSaving}
       />
 

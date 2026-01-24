@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro"
 
-import { DEFAULT_USER_ID } from "../../../../db/supabase.client"
 import { listGenerationErrors } from "../../../../lib/services/generations.service"
 import { generationErrorsListQuerySchema, generationIdParamSchema } from "../../../../lib/validators/generations"
 
@@ -32,8 +31,7 @@ export const GET: APIRoute = async ({ params, url, locals }) => {
     )
   }
 
-  // MVP: brak auth — docelowo userId powinno pochodzić z sesji (wtedy brak user → 401).
-  const userId = DEFAULT_USER_ID
+  const userId = (locals as any)?.userId
 
   const generationId = idValidation.data.id
   const { data, error } = await listGenerationErrors(
