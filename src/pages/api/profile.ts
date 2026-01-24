@@ -1,15 +1,19 @@
 import type { APIRoute } from "astro"
 
-import { DEFAULT_USER_ID, supabaseClient } from "../../db/supabase.client"
+import { supabaseClient } from "../../db/supabase.client"
 import { getProfile, updateProfile } from "../../lib/services/profile.service"
 import { updateProfileSchema } from "../../lib/validators/profile"
 
 export const prerender = false
 
 export const GET: APIRoute = async ({ locals }) => {
-  // MVP: auth jest stubowany stałym użytkownikiem (jak w innych endpointach).
-  // Docelowo: userId ma pochodzić z JWT (Authorization: Bearer ...) + supabase.auth.getUser().
-  const userId = DEFAULT_USER_ID
+  const userId = locals.user?.id
+  if (!userId) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    })
+  }
 
   const supabase = (locals as any)?.supabase ?? supabaseClient
 
@@ -56,9 +60,13 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     )
   }
 
-  // MVP: auth jest stubowany stałym użytkownikiem (jak w innych endpointach).
-  // Docelowo: userId ma pochodzić z JWT (Authorization: Bearer ...) + supabase.auth.getUser().
-  const userId = DEFAULT_USER_ID
+  const userId = locals.user?.id
+  if (!userId) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    })
+  }
 
   let jsonBody: unknown
   try {
@@ -76,7 +84,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
   const validation = updateProfileSchema.safeParse(jsonBody)
   if (!validation.success) {
     return new Response(
-      JSON.stringify({ error: "validation_error", details: validation.error.format() }),
+      JSON.stringify({ error: "validation_error", details: validation.error.flatten() }),
       {
         status: 400,
         headers: { "Content-Type": "application/json" },
