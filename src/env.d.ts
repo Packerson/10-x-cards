@@ -10,7 +10,9 @@ declare global {
       user?: {
         id: string;
         email: string | null;
+        display_name: string | null;
       };
+      userId?: string;
       isAuthenticated: boolean;
     }
   }

@@ -9,10 +9,15 @@ import { UserMenu } from "./UserMenu"
 interface HeaderProps {
   currentPath: string
   initialIsAuthenticated?: boolean
+  initialUser?: {
+    id: string
+    email: string | null
+    display_name: string | null
+  }
 }
 
-export function Header({ currentPath, initialIsAuthenticated }: HeaderProps) {
-  const { status, profile } = useProfile()
+export function Header({ currentPath, initialIsAuthenticated, initialUser }: HeaderProps) {
+  const { status } = useProfile()
 
   const isAuthenticated =
     status === "authenticated" ? true : status === "unauthenticated" ? false : initialIsAuthenticated ?? false
@@ -63,7 +68,7 @@ export function Header({ currentPath, initialIsAuthenticated }: HeaderProps) {
               ))}
           </nav>
 
-          {isAuthenticated && <UserMenu profile={profile} />}
+          {isAuthenticated && <UserMenu user={initialUser ?? null} />}
         </div>
 
         {/* Mobile */}
