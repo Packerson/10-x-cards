@@ -53,23 +53,19 @@ export const createSupabaseServerInstance = (context: {
     secure: resolveSecureFlag(context.headers, context.requestUrl),
   }
 
-  const supabase = createServerClient<Database>(
-    supabaseUrl,
-    supabaseAnonKey,
-    {
-      cookieOptions,
-      cookies: {
-        getAll() {
-          return parseCookieHeader(context.headers.get("Cookie") ?? "")
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            context.cookies.set(name, value, options),
-          )
-        },
+  const supabase = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+    cookieOptions,
+    cookies: {
+      getAll() {
+        return parseCookieHeader(context.headers.get("Cookie") ?? "")
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) =>
+          context.cookies.set(name, value, options),
+        )
       },
     },
-  )
+  })
 
   return supabase
 }

@@ -63,9 +63,7 @@ export interface AuthForgotPasswordDTO {
 export interface AuthResetPasswordDTO {
   newPassword: string
   newPasswordConfirm: string
-  accessToken?: string
-  refreshToken?: string
-  code?: string
+  code: string
 }
 
 export interface AuthUserDTO {

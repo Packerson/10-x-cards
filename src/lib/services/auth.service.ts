@@ -150,63 +150,29 @@ export async function requestPasswordReset(
 
 export async function updatePasswordWithRecovery(
   { supabase }: LoginDeps,
-  {
-    accessToken,
-    refreshToken,
-    code,
-    newPassword,
-  }: { accessToken?: string; refreshToken?: string; code?: string; newPassword: string },
+  { code, newPassword }: { code: string; newPassword: string },
 ): Promise<{ error?: ResetPasswordError }> {
   try {
-    if (code) {
-      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
 
-      if (exchangeError) {
-        const exchangeCode = typeof exchangeError.code === "string" ? exchangeError.code : null
-        const exchangeMessage = exchangeError.message?.toLowerCase() ?? ""
+    if (exchangeError) {
+      const exchangeCode = typeof exchangeError.code === "string" ? exchangeError.code : null
+      const exchangeMessage = exchangeError.message?.toLowerCase() ?? ""
 
-        if (exchangeCode === "token_expired" || exchangeMessage.includes("expired")) {
-          return { error: { code: "token_expired" } }
-        }
-        if (exchangeCode === "invalid_token" || exchangeMessage.includes("invalid")) {
-          return { error: { code: "invalid_token" } }
-        }
-
-        console.error("updatePasswordWithRecovery: exchange failed", {
-          code: exchangeCode,
-          status: exchangeError.status,
-          message: exchangeError.message,
-        })
-
-        return { error: { code: "server_error", details: exchangeError.message } }
+      if (exchangeCode === "token_expired" || exchangeMessage.includes("expired")) {
+        return { error: { code: "token_expired" } }
       }
-    } else if (accessToken && refreshToken) {
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
+      if (exchangeCode === "invalid_token" || exchangeMessage.includes("invalid")) {
+        return { error: { code: "invalid_token" } }
+      }
+
+      console.error("updatePasswordWithRecovery: exchange failed", {
+        code: exchangeCode,
+        status: exchangeError.status,
+        message: exchangeError.message,
       })
 
-      if (sessionError) {
-        const sessionCode = typeof sessionError.code === "string" ? sessionError.code : null
-        const sessionMessage = sessionError.message?.toLowerCase() ?? ""
-
-        if (sessionCode === "token_expired" || sessionMessage.includes("expired")) {
-          return { error: { code: "token_expired" } }
-        }
-        if (sessionCode === "invalid_token" || sessionMessage.includes("invalid")) {
-          return { error: { code: "invalid_token" } }
-        }
-
-        console.error("updatePasswordWithRecovery: session failed", {
-          code: sessionCode,
-          status: sessionError.status,
-          message: sessionError.message,
-        })
-
-        return { error: { code: "server_error", details: sessionError.message } }
-      }
-    } else {
-      return { error: { code: "invalid_token" } }
+      return { error: { code: "server_error", details: exchangeError.message } }
     }
 
     const { error: updateError } = await supabase.auth.updateUser({

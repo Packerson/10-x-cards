@@ -30,8 +30,6 @@ export function ResetPasswordForm({ linkError }: ResetPasswordFormProps) {
   const passwordId = useId()
   const confirmId = useId()
 
-  const [accessToken, setAccessToken] = useState<string | null>(null)
-  const [refreshToken, setRefreshToken] = useState<string | null>(null)
   const [authCode, setAuthCode] = useState<string | null>(null)
   const [linkErrorMessage, setLinkErrorMessage] = useState<string | null>(linkError ?? null)
   const [password, setPassword] = useState("")
@@ -44,12 +42,12 @@ export function ResetPasswordForm({ linkError }: ResetPasswordFormProps) {
 
   const canSubmit = useMemo(() => {
     if (linkErrorMessage) return false
-    if (!authCode && (!accessToken || !refreshToken)) return false
+    if (!authCode) return false
     return (
       validatePassword(password) === null &&
       validatePasswordConfirm(password, confirm) === null
     )
-  }, [accessToken, authCode, refreshToken, confirm, linkErrorMessage, password])
+  }, [authCode, confirm, linkErrorMessage, password])
 
   const handleSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -60,25 +58,18 @@ export function ResetPasswordForm({ linkError }: ResetPasswordFormProps) {
       setConfirmError(nextConfirmError)
       setFormError(null)
       if (nextPasswordError || nextConfirmError) return
-      if (!authCode && (!accessToken || !refreshToken)) {
+      if (!authCode) {
         setLinkErrorMessage("Brakuje danych z linku resetującego. Poproś o nowy link.")
         return
       }
 
       setIsSubmitting(true)
       try {
-        const payload = authCode
-          ? {
-              newPassword: password,
-              newPasswordConfirm: confirm,
-              code: authCode,
-            }
-          : {
-              newPassword: password,
-              newPasswordConfirm: confirm,
-              accessToken,
-              refreshToken,
-            }
+        const payload = {
+          newPassword: password,
+          newPasswordConfirm: confirm,
+          code: authCode,
+        }
 
         const response = await fetch("/api/auth/reset-password", {
           method: "POST",
@@ -126,7 +117,7 @@ export function ResetPasswordForm({ linkError }: ResetPasswordFormProps) {
         setIsSubmitting(false)
       }
     },
-    [accessToken, authCode, confirm, password, refreshToken],
+    [authCode, confirm, password],
   )
 
   useEffect(() => {
@@ -134,21 +125,25 @@ export function ResetPasswordForm({ linkError }: ResetPasswordFormProps) {
     const url = new URL(window.location.href)
     const hash = url.hash.startsWith("#") ? url.hash.slice(1) : url.hash
     const hashParams = new URLSearchParams(hash)
-    const token = hashParams.get("access_token")
-    const refresh = hashParams.get("refresh_token")
     const hashType = hashParams.get("type")
+    const hashError = hashParams.get("error")
+    const hashErrorCode = hashParams.get("error_code")
+    const hashErrorDescription = hashParams.get("error_description")
+    const queryErrorCode = url.searchParams.get("error_code")
     const code = url.searchParams.get("code")
     const queryType = url.searchParams.get("type")
-
-    if (hashType === "recovery" && token && refresh) {
-      setAccessToken(token)
-      setRefreshToken(refresh)
-      setAuthCode(null)
-      setLinkErrorMessage(null)
+    if (hashError || hashErrorCode || queryErrorCode) {
+      if (hashErrorCode === "otp_expired" || queryErrorCode === "otp_expired") {
+        setLinkErrorMessage("Link resetujący wygasł. Poproś o nowy link.")
+      } else if (hashErrorCode === "invalid_token" || queryErrorCode === "invalid_token") {
+        setLinkErrorMessage("Link resetujący jest nieprawidłowy. Poproś o nowy link.")
+      } else if (hashErrorDescription) {
+        setLinkErrorMessage(decodeURIComponent(hashErrorDescription.replace(/\+/g, " ")))
+      } else {
+        setLinkErrorMessage("Link resetujący jest nieprawidłowy. Poproś o nowy link.")
+      }
     } else if (code && (queryType === "recovery" || !queryType)) {
       setAuthCode(code)
-      setAccessToken(null)
-      setRefreshToken(null)
       setLinkErrorMessage(null)
     } else {
       setLinkErrorMessage("Brakuje linku resetującego. Poproś o nowy link.")
