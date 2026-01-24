@@ -28,8 +28,10 @@ export const onRequest = defineMiddleware(async ({ cookies, request, url, locals
       id: user.id,
       email: user.email ?? null,
     }
+    locals.userId = user.id
     locals.isAuthenticated = true
   } else {
+    locals.userId = undefined
     locals.isAuthenticated = false
   }
 

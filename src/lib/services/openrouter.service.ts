@@ -123,7 +123,7 @@ export class OpenRouterService {
 
     const baseDefaultParams: OpenRouterParams = {
       temperature: 0.7,
-      max_tokens: 800,
+      max_tokens: 2000,
       top_p: 0.9,
       presence_penalty: 0,
     }
@@ -137,7 +137,7 @@ export class OpenRouterService {
 
     this._apiKey = apiKey
     this._baseUrl = config.baseUrl ?? "https://openrouter.ai/api/v1"
-    this._timeoutMs = config.timeoutMs ?? 20000
+    this._timeoutMs = config.timeoutMs ?? 30000
     this._allowedModels = DEFAULT_ALLOWED_MODELS
     this.defaultModel = defaultModel
     this.defaultParams = {

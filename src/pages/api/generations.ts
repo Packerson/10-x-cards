@@ -69,6 +69,27 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(JSON.stringify({ error: "duplicate_prompt" }), { status: 409 })
     }
 
+    if (error.code === "rate_limit") {
+      const headers = new Headers()
+      if (typeof error.retryAfterMs === "number") {
+        headers.set("Retry-After", Math.ceil(error.retryAfterMs / 1000).toString())
+      }
+      return new Response(JSON.stringify({ error: "rate_limit" }), { status: 429, headers })
+    }
+
+    if (error.code === "config_error") {
+      return new Response(
+        JSON.stringify({ error: "server_error", details: "openrouter_not_configured" }),
+        { status: 500 },
+      )
+    }
+
+    if (error.code === "openrouter_error") {
+      return new Response(JSON.stringify({ error: "openrouter_error", details: error.details }), {
+        status: 502,
+      })
+    }
+
     return new Response(
       JSON.stringify({ error: "server_error", details: error.details }),
       { status: 500 },

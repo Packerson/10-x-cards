@@ -14,8 +14,17 @@ import type {
 } from "../../types.ts"
 import type { Json } from "../../db/database.types.ts"
 import { createGenerationSchema } from "../validators/generations.ts"
-import { OpenRouterService, buildSystemMessage } from "./openrouter.service.ts"
-import type { OpenRouterResponseFormat } from "../openrouter.types.ts"
+import {
+  OpenRouterConfigError,
+  OpenRouterNetworkError,
+  OpenRouterRateLimitError,
+  OpenRouterRequestError,
+  OpenRouterResponseSchemaError,
+  OpenRouterService,
+  OpenRouterValidationError,
+  buildSystemMessage,
+} from "./openrouter.service.ts"
+import type { OpenRouterParams, OpenRouterResponseFormat } from "../openrouter.types.ts"
 import { getProfile } from "./profile.service.ts"
 
 
@@ -27,9 +36,19 @@ interface CreateGenerationDeps {
 type CreateGenerationError =
   | { code: "validation_error"; details: unknown }
   | { code: "duplicate_prompt" }
+  | { code: "rate_limit"; details?: unknown; retryAfterMs?: number }
+  | { code: "config_error"; details?: unknown }
+  | { code: "openrouter_error"; details?: unknown }
   | { code: "database_error"; details?: unknown }
 
 const DEFAULT_CARD_COUNT = 10
+const DEFAULT_MODEL = "openai/gpt-4.1-mini"
+const DEFAULT_MODEL_SETTINGS: OpenRouterParams = {
+  temperature: 0.7,
+  max_tokens: 800,
+  top_p: 0.9,
+  presence_penalty: 0,
+}
 const CARD_PROPOSALS_RESPONSE_FORMAT: OpenRouterResponseFormat = {
   type: "json_schema",
   json_schema: {
@@ -88,8 +107,6 @@ export async function createGeneration(
     return { error: { code: "duplicate_prompt" } }
   }
 
-  const openRouter = new OpenRouterService()
-
   const { data: inserted, error: insertError } = await supabase
     .from("generations")
     .insert({
@@ -102,8 +119,8 @@ export async function createGeneration(
       total_generated: 0,
       total_accepted: 0,
       total_rejected: 0,
-      model: openRouter.defaultModel,
-      model_settings: (openRouter.defaultParams ?? {}) as Json,
+      model: DEFAULT_MODEL,
+      model_settings: DEFAULT_MODEL_SETTINGS as Json,
     })
     .select("id, prompt_text, total_generated, status")
     .single()
@@ -119,6 +136,7 @@ export async function createGeneration(
 
   let cardProposals: CardProposalDTO[] = []
   try {
+    const openRouter = new OpenRouterService()
     const locale = await resolveLocale({ supabase, userId })
     const structured = await openRouter.createStructuredCompletion<{
       cards: Array<{ front: string; back: string }>
@@ -134,13 +152,13 @@ export async function createGeneration(
       throw new Error("empty_card_proposals")
     }
   } catch (processingError) {
-    await logGenerationError(
-      supabase,
-      inserted.id,
-      "processing_error",
-      processingError instanceof Error ? processingError.message : "unknown_processing_error",
-    )
-    return { error: { code: "database_error", details: "processing_failed" } }
+    const errorMessage =
+      processingError instanceof Error ? processingError.message : "unknown_processing_error"
+    const mappedError = mapOpenRouterError(processingError, errorMessage)
+
+    await logGenerationError(supabase, inserted.id, mappedError.logCode, errorMessage)
+
+    return { error: mappedError.apiError }
   }
 
   const { data: updated, error: updateError } = await supabase
@@ -164,6 +182,57 @@ export async function createGeneration(
       card_proposals: cardProposals,
     },
   }
+}
+
+function mapOpenRouterError(
+  error: unknown,
+  fallbackMessage: string,
+): { apiError: CreateGenerationError; logCode: string } {
+  if (error instanceof OpenRouterValidationError) {
+    return {
+      apiError: { code: "validation_error", details: error.message },
+      logCode: "validation_error",
+    }
+  }
+
+  if (error instanceof OpenRouterConfigError) {
+    return { apiError: { code: "config_error", details: error.message }, logCode: "config_error" }
+  }
+
+  if (error instanceof OpenRouterRateLimitError) {
+    return {
+      apiError: {
+        code: "rate_limit",
+        details: error.message,
+        retryAfterMs: error.retryAfterMs,
+      },
+      logCode: "rate_limit_error",
+    }
+  }
+
+  if (error instanceof OpenRouterRequestError) {
+    return {
+      apiError: {
+        code: "openrouter_error",
+        details: {
+          status: error.status,
+          message: error.message,
+          details: error.details,
+        },
+      },
+      logCode: "request_error",
+    }
+  }
+
+  if (error instanceof OpenRouterResponseSchemaError) {
+    return { apiError: { code: "openrouter_error", details: error.message }, logCode: "schema_error" }
+  }
+
+  if (error instanceof OpenRouterNetworkError) {
+    return { apiError: { code: "openrouter_error", details: error.message }, logCode: "network_error" }
+  }
+
+  return { apiError: { code: "openrouter_error", details: fallbackMessage }, logCode: "unknown_error" }
 }
 
 function normalizeCardProposals(
