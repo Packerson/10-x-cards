@@ -122,6 +122,23 @@ npm run lint:fix  # Lint and auto-fix
 npm run format    # Prettier format
 ```
 
+### Tests
+
+```text
+# Unit tests (Vitest)
+npm run test:unit           # Run unit tests once
+npm run test:unit:watch     # Watch mode
+npm run test:unit:ui        # Vitest UI
+npm run test:unit:coverage  # Coverage report
+
+# E2E tests (Playwright)
+npm run test:e2e            # Run E2E tests headless
+npm run test:e2e:ui         # Playwright UI
+npm run test:e2e:headed     # Run with browser window
+npm run test:e2e:debug      # Debug mode
+npm run test:e2e:install    # Install Chromium for E2E
+```
+
 ## Project scope
 
 ### In scope (MVP)
