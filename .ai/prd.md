@@ -66,12 +66,13 @@ Opis: Jako nowy użytkownik chcę się zarejestrować, aby mieć dostęp do wła
 Kryteria akceptacji:
 - Formularz rejestracyjny zawiera pola na adres e-mail i hasło.
 - Użytkownik otrzymuje potwierdzenie pomyślnej rejestracji i zostaje zalogowany.
+- Zostaje przekierowany na strone "/"
 
 ID: US-002
 Tytuł: Logowanie do aplikacji
 Opis: Jako zarejestrowany użytkownik chcę móc się zalogować, aby mieć dostęp do moich fiszek i historii generowania.
 Kryteria akceptacji:
-- Po podaniu prawidłowych danych logowania użytkownik zostaje przekierowany do widoku generowania fiszek.
+- Po podaniu prawidłowych danych logowania użytkownik zostaje przekierowany na stronę główną "/"
 - Błędne dane logowania wyświetlają komunikat o nieprawidłowych danych.
 - Dane dotyczące logowania przechowywane są w bezpieczny sposób.
 

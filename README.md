@@ -42,6 +42,9 @@ Key goals:
   - OpenRouter for unified access to multiple LLM providers (OpenAI, Anthropic, Google, etc.)
 - Tooling
   - ESLint 9, Prettier, Husky + lint-staged
+- Testing
+  - Vitest (unit, jsdom dla komponentów, coverage)
+  - Playwright (E2E, Chromium/Chrome, POM)
 - CI/CD & Hosting (planned)
   - GitHub Actions for CI/CD
   - DigitalOcean for hosting (Docker image)
