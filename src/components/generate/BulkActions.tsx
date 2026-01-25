@@ -10,12 +10,13 @@ export function BulkActions({
   const hasAccepted = acceptedCount > 0
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3" data-testid="proposal-bulk-actions">
       <Button
         type="button"
         variant="outline"
         size="sm"
         onClick={() => onBulkAction("accept_all")}
+        data-testid="proposal-accept-all"
       >
         <svg className="mr-1.5 size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -28,6 +29,7 @@ export function BulkActions({
         variant="outline"
         size="sm"
         onClick={() => onBulkAction("reject_all")}
+        data-testid="proposal-reject-all"
       >
         <svg className="mr-1.5 size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -42,6 +44,7 @@ export function BulkActions({
           onClick={onSave}
           disabled={!hasAccepted || isSaving}
           className="bg-emerald-600 hover:bg-emerald-700"
+          data-testid="proposal-save-accepted"
         >
           {isSaving ? (
             <>

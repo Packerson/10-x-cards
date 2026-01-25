@@ -8,6 +8,7 @@ export interface HeaderNavItem {
   href: string
   label: string
   disabled?: boolean
+  testId?: string
 }
 
 interface MobileMenuProps {
@@ -30,7 +31,7 @@ export function MobileMenu({
   const items = useMemo(() => navItems, [navItems])
 
   return (
-    <details ref={detailsRef} className="relative md:hidden">
+    <details ref={detailsRef} className="relative md:hidden" data-testid="header-nav-mobile">
       <summary
         className={cn(
           "list-none inline-flex cursor-pointer items-center justify-center rounded-md px-3 py-2",
@@ -51,6 +52,7 @@ export function MobileMenu({
               currentPath={currentPath}
               onNavigate={close}
               disabled={item.disabled}
+              testId={item.testId}
             />
           ))}
 

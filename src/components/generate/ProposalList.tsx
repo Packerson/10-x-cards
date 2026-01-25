@@ -11,9 +11,15 @@ export function ProposalList({ proposals, onAction, onEdit }: ProposalListProps)
       className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3"
       role="list"
       aria-label="Lista propozycji fiszek"
+      data-testid="proposal-list"
     >
       {proposals.map((proposal) => (
-        <div key={proposal.id} role="listitem" className="flex">
+        <div
+          key={proposal.id}
+          role="listitem"
+          className="flex"
+          data-testid={`proposal-item-${proposal.id}`}
+        >
           <ProposalCard
             proposal={proposal}
             onAction={(action) => onAction(proposal.id, action)}

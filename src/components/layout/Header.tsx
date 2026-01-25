@@ -26,20 +26,20 @@ export function Header({ currentPath, initialIsAuthenticated, initialUser }: Hea
     // Elementy typu "Historia" są zgodne z planem, ale route nie istnieje -> disabled.
     if (!isAuthenticated) {
       return [
-        { href: "/auth/login", label: "Zaloguj się" },
-        { href: "/auth/register", label: "Zarejestruj" },
+        { href: "/auth/login", label: "Zaloguj się", testId: "header-nav-login" },
+        { href: "/auth/register", label: "Zarejestruj", testId: "header-nav-register" },
       ]
     }
 
     return [
-      { href: "/generate", label: "Generuj fiszki" },
-      { href: "/cards", label: "Moje fiszki" },
-      { href: "/generations", label: "Historia", disabled: true },
+      { href: "/generate", label: "Generuj fiszki", testId: "header-nav-generate" },
+      { href: "/cards", label: "Moje fiszki", testId: "header-nav-cards" },
+      { href: "/generations", label: "Historia", disabled: true, testId: "header-nav-history" },
     ]
   }, [isAuthenticated])
 
   return (
-    <header className="border-b bg-background">
+    <header className="border-b bg-background" data-testid="site-header">
       <div className="container mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <a
           href="/"
@@ -48,13 +48,18 @@ export function Header({ currentPath, initialIsAuthenticated, initialUser }: Hea
             "text-foreground hover:opacity-90"
           )}
           aria-label="Przejdź na stronę główną"
+          data-testid="header-logo"
         >
           10x-cards
         </a>
 
         {/* Desktop */}
         <div className="hidden items-center gap-6 md:flex">
-          <nav className="flex items-center gap-6" aria-label="Nawigacja">
+          <nav
+            className="flex items-center gap-6"
+            aria-label="Nawigacja"
+            data-testid="header-nav-desktop"
+          >
             {navItems
               .filter((x) => isAuthenticated || x.label !== "Wyloguj się")
               .map((item) => (
@@ -64,6 +69,7 @@ export function Header({ currentPath, initialIsAuthenticated, initialUser }: Hea
                   label={item.label}
                   currentPath={currentPath}
                   disabled={item.disabled}
+                  testId={item.testId}
                 />
               ))}
           </nav>

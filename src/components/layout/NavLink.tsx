@@ -7,6 +7,7 @@ interface NavLinkProps {
   exact?: boolean
   onNavigate?: () => void
   disabled?: boolean
+  testId?: string
 }
 
 function isActivePath(href: string, currentPath: string, exact: boolean): boolean {
@@ -22,6 +23,7 @@ export function NavLink({
   exact = false,
   onNavigate,
   disabled = false,
+  testId,
 }: NavLinkProps) {
   const isActive = isActivePath(href, currentPath, exact)
 
@@ -33,6 +35,7 @@ export function NavLink({
           "cursor-not-allowed select-none text-sm font-medium text-muted-foreground/70"
         )}
         title="Wkrótce"
+        data-testid={testId}
       >
         {label}
       </span>
@@ -48,6 +51,7 @@ export function NavLink({
         "text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
         isActive && "text-foreground underline underline-offset-8"
       )}
+      data-testid={testId}
     >
       {label}
     </a>

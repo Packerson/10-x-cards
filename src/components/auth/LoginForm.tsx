@@ -90,7 +90,10 @@ export function LoginForm() {
   )
 
   return (
-    <section className="mx-auto w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-sm">
+    <section
+      className="mx-auto w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-sm"
+      data-testid="login-form"
+    >
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Zaloguj się</h1>
         <p className="text-sm text-muted-foreground">
@@ -111,6 +114,7 @@ export function LoginForm() {
             className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             placeholder="np. maria@domena.pl"
             value={email}
+            data-testid="login-email-input"
             onChange={(event) => {
               setEmail(event.target.value)
               setEmailError(null)
@@ -138,6 +142,7 @@ export function LoginForm() {
             className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             placeholder="Wpisz hasło"
             value={password}
+            data-testid="login-password-input"
             onChange={(event) => {
               setPassword(event.target.value)
               setPasswordError(null)
@@ -165,6 +170,7 @@ export function LoginForm() {
             size="lg"
             className="w-full sm:w-auto"
             disabled={!canSubmit || isSubmitting}
+            data-testid="login-submit"
           >
             {isSubmitting ? "Logowanie..." : "Zaloguj się"}
           </Button>

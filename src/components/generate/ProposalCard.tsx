@@ -46,6 +46,7 @@ export function ProposalCard({ proposal, onAction, onEdit }: ProposalCardProps) 
       onKeyDown={handleKeyDown}
       aria-label={`Fiszka: ${front.substring(0, 50)}${front.length > 50 ? "..." : ""}`}
       data-proposal-id={id}
+      data-testid={`proposal-card-${id}`}
     >
       {isEditing ? (
         <CardEditForm

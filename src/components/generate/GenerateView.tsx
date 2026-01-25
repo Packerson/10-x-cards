@@ -22,7 +22,7 @@ export function GenerateView() {
   const hasProposals = proposals.length > 0
 
   return (
-    <div>
+    <div data-testid="generate-view">
       <header className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Generuj fiszki
@@ -35,7 +35,7 @@ export function GenerateView() {
       {isGenerating && <LoadingOverlay />}
 
       <div className="space-y-8">
-        <section aria-labelledby="prompt-section">
+        <section aria-labelledby="prompt-section" data-testid="generate-prompt-section">
           <h2 id="prompt-section" className="sr-only">
             Formularz generowania
           </h2>
@@ -70,7 +70,7 @@ export function GenerateView() {
         )}
 
         {!hasProposals && !isGenerating && !error && (
-          <div className="py-12 text-center">
+          <div className="py-12 text-center" data-testid="generate-empty-state">
             <div className="mx-auto mb-4 size-16 rounded-full bg-muted/50 p-4">
               <svg
                 className="size-full text-muted-foreground"

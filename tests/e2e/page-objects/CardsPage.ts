@@ -11,6 +11,8 @@ export class CardsPage extends BasePage {
   readonly closeButton: Locator
   readonly emptyState: Locator
   readonly cardsGrid: Locator
+  readonly flashcards: Locator
+  readonly flashcardDeleteButtons: Locator
   readonly inlineDeleteConfirmation: Locator
   readonly inlineDeleteConfirmButton: Locator
   readonly inlineDeleteCancelButton: Locator
@@ -26,6 +28,10 @@ export class CardsPage extends BasePage {
     this.closeButton = page.getByTestId("create-card-close")
     this.emptyState = page.getByTestId("cards-empty-state")
     this.cardsGrid = page.getByTestId("cards-grid")
+    this.flashcards = page.locator(
+      "[data-testid^='flashcard-']:not([data-testid^='flashcard-delete-'])",
+    )
+    this.flashcardDeleteButtons = page.locator("[data-testid^='flashcard-delete-']")
     this.inlineDeleteConfirmation = page.getByTestId("inline-delete-confirmation")
     this.inlineDeleteConfirmButton = page.getByTestId("inline-delete-confirm")
     this.inlineDeleteCancelButton = page.getByTestId("inline-delete-cancel")
@@ -45,11 +51,23 @@ export class CardsPage extends BasePage {
     await this.submitButton.click()
   }
 
+  firstFlashcard(): Locator {
+    return this.flashcards.first()
+  }
+
+  firstFlashcardDeleteButton(): Locator {
+    return this.flashcardDeleteButtons.first()
+  }
+
   flashcardById(cardId: number): Locator {
     return this.page.getByTestId(`flashcard-${cardId}`)
   }
 
   flashcardDeleteButtonById(cardId: number): Locator {
     return this.page.getByTestId(`flashcard-delete-${cardId}`)
+  }
+
+  async flashcardCount(): Promise<number> {
+    return this.flashcards.count()
   }
 }
