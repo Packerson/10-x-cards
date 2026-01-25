@@ -30,8 +30,15 @@ export function ProposalSection({
   }
 
   return (
-    <section className="space-y-6" aria-labelledby="proposals-heading">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <section
+      className="space-y-6"
+      aria-labelledby="proposals-heading"
+      data-testid="proposal-section"
+    >
+      <div
+        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+        data-testid="proposal-header"
+      >
         <h2 id="proposals-heading" className="text-xl font-semibold text-foreground">
           Propozycje fiszek
         </h2>

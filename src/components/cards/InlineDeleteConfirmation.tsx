@@ -13,6 +13,7 @@ export function InlineDeleteConfirmation(props: InlineDeleteConfirmationProps) {
       className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 p-3"
       role="alert"
       aria-live="polite"
+      data-testid="inline-delete-confirmation"
     >
       <div className="text-sm font-medium text-destructive">Usunąć tę fiszkę?</div>
 
@@ -28,6 +29,7 @@ export function InlineDeleteConfirmation(props: InlineDeleteConfirmationProps) {
           className="h-9 rounded-md bg-destructive px-3 text-sm font-medium text-destructive-foreground disabled:opacity-50"
           disabled={isSubmitting}
           onClick={() => onConfirm()}
+          data-testid="inline-delete-confirm"
         >
           {isSubmitting ? "Usuwanie..." : "Potwierdź"}
         </button>
@@ -36,6 +38,7 @@ export function InlineDeleteConfirmation(props: InlineDeleteConfirmationProps) {
           className="h-9 rounded-md border border-input bg-background px-3 text-sm"
           disabled={isSubmitting}
           onClick={onCancel}
+          data-testid="inline-delete-cancel"
         >
           Anuluj
         </button>

@@ -22,7 +22,7 @@ export function PromptForm({
   )
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" data-testid="generate-prompt-form">
       <div className="space-y-2">
         <label
           htmlFor="prompt-text"
@@ -39,10 +39,12 @@ export function PromptForm({
           disabled={isLoading}
           readOnly={isLoading}
           aria-describedby="character-count"
+          data-testid="generate-prompt-input"
         />
         <div
           id="character-count"
           className="flex items-center justify-between text-sm"
+          data-testid="generate-prompt-counter"
         >
           <CharacterCounter
             current={promptText.length}
@@ -57,6 +59,7 @@ export function PromptForm({
         disabled={isDisabled || isLoading}
         className="w-full sm:w-auto"
         size="lg"
+        data-testid="generate-submit"
       >
         {isLoading ? (
           <>

@@ -54,7 +54,10 @@ function ErrorBanner(props: { error: CardsViewError; onRetry: () => void }) {
 function EmptyState(props: { onRetry: () => void }) {
   const { onRetry } = props
   return (
-    <div className="rounded-md border border-dashed p-6 text-center">
+    <div
+      className="rounded-md border border-dashed p-6 text-center"
+      data-testid="cards-empty-state"
+    >
       <div className="text-sm font-medium">Brak fiszek</div>
       <div className="mt-1 text-sm text-muted-foreground">
         Zmień filtry lub dodaj nową fiszkę.

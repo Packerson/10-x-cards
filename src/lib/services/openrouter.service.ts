@@ -137,7 +137,7 @@ export class OpenRouterService {
 
     this._apiKey = apiKey
     this._baseUrl = config.baseUrl ?? "https://openrouter.ai/api/v1"
-    this._timeoutMs = config.timeoutMs ?? 30000
+    this._timeoutMs = config.timeoutMs ?? 15000
     this._allowedModels = DEFAULT_ALLOWED_MODELS
     this.defaultModel = defaultModel
     this.defaultParams = {

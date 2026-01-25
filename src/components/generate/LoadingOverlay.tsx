@@ -7,6 +7,7 @@ export function LoadingOverlay({ message = "Generowanie fiszek..." }: LoadingOve
       role="status"
       aria-live="polite"
       aria-busy="true"
+      data-testid="generate-loading"
     >
       <div className="flex flex-col items-center gap-4">
         <div className="relative size-12">

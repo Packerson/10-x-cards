@@ -29,6 +29,7 @@ export function ErrorMessage({
       className="rounded-lg border border-destructive/50 bg-destructive/10 p-4"
       role="alert"
       aria-live="assertive"
+      data-testid="generate-error"
     >
       <div className="flex items-start gap-3">
         <svg

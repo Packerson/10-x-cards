@@ -97,6 +97,7 @@ export function CardsHeader(props: CardsHeaderProps) {
             className="w-full bg-emerald-600 text-white hover:bg-emerald-700"
             disabled={isBusy}
             onClick={onOpenCreateModal}
+            data-testid="cards-add-button"
           >
             Dodaj fiszkę
           </Button>
