@@ -1,21 +1,37 @@
 import { useMemo, useRef } from "react"
 import { User } from "lucide-react"
 
-import type { GetProfileDTO } from "@/types"
 import { cn } from "@/lib/utils"
 
 interface UserMenuProps {
-  profile: GetProfileDTO | null
+  user: {
+    display_name: string | null
+    email: string | null
+  } | null
   disabled?: boolean
 }
 
-export function UserMenu({ profile, disabled = false }: UserMenuProps) {
+const MAX_LABEL_LENGTH = 15
+
+function buildUserLabel(user: UserMenuProps["user"]): string {
+  if (!user) return "Konto"
+
+  const candidate = user.display_name || user.email
+  if (!candidate) return "Konto"
+
+  if (candidate.length <= MAX_LABEL_LENGTH) {
+    return candidate
+  }
+
+  return `${candidate.slice(0, Math.max(0, MAX_LABEL_LENGTH - 1))}…`
+}
+
+export function UserMenu({ user, disabled = false }: UserMenuProps) {
   const detailsRef = useRef<HTMLDetailsElement | null>(null)
 
   const userLabel = useMemo(() => {
-    if (!profile) return "Konto"
-    return `ID: ${profile.id.slice(0, 8)}…`
-  }, [profile])
+    return buildUserLabel(user)
+  }, [user])
 
   const close = () => {
     detailsRef.current?.removeAttribute("open")

@@ -42,6 +42,9 @@ Key goals:
   - OpenRouter for unified access to multiple LLM providers (OpenAI, Anthropic, Google, etc.)
 - Tooling
   - ESLint 9, Prettier, Husky + lint-staged
+- Testing
+  - Vitest (unit, jsdom dla komponentów, coverage)
+  - Playwright (E2E, Chromium/Chrome, POM)
 - CI/CD & Hosting (planned)
   - GitHub Actions for CI/CD
   - DigitalOcean for hosting (Docker image)
@@ -117,6 +120,23 @@ npm run astro     # Run arbitrary Astro CLI commands
 npm run lint      # Lint all files
 npm run lint:fix  # Lint and auto-fix
 npm run format    # Prettier format
+```
+
+### Tests
+
+```text
+# Unit tests (Vitest)
+npm run test:unit           # Run unit tests once
+npm run test:unit:watch     # Watch mode
+npm run test:unit:ui        # Vitest UI
+npm run test:unit:coverage  # Coverage report
+
+# E2E tests (Playwright)
+npm run test:e2e            # Run E2E tests headless
+npm run test:e2e:ui         # Playwright UI
+npm run test:e2e:headed     # Run with browser window
+npm run test:e2e:debug      # Debug mode
+npm run test:e2e:install    # Install Chromium for E2E
 ```
 
 ## Project scope

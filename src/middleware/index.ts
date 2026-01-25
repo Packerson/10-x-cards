@@ -24,9 +24,12 @@ export const onRequest = defineMiddleware(async ({ cookies, request, url, locals
   } = await supabase.auth.getUser()
 
   if (user) {
+    const displayName =
+      typeof user.user_metadata?.display_name === "string" ? user.user_metadata.display_name : null
     locals.user = {
       id: user.id,
       email: user.email ?? null,
+      display_name: displayName,
     }
     locals.userId = user.id
     locals.isAuthenticated = true
