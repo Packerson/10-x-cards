@@ -85,6 +85,7 @@ test.describe.serial("generate e2e", () => {
 
     await header.goToGenerate()
     await generate.root.waitFor()
+    await expect(generate.root).toHaveAttribute("data-hydrated", "true")
 
     const minText = buildRandomPrompt(1000)
     const maxText = buildRandomPrompt(10000)

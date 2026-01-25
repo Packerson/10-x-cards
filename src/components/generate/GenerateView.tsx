@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { useGenerateFlashcards } from "./useGenerateFlashcards"
 import { PromptForm } from "./PromptForm"
 import { LoadingOverlay } from "./LoadingOverlay"
@@ -5,6 +6,7 @@ import { ErrorMessage } from "./ErrorMessage"
 import { ProposalSection } from "./ProposalSection"
 
 export function GenerateView() {
+  const [isHydrated, setIsHydrated] = useState(false)
   const {
     state,
     isPromptValid,
@@ -21,8 +23,12 @@ export function GenerateView() {
   const { promptText, isGenerating, isSaving, error, generationId, proposals } = state
   const hasProposals = proposals.length > 0
 
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
   return (
-    <div data-testid="generate-view">
+    <div data-testid="generate-view" data-hydrated={isHydrated ? "true" : "false"}>
       <header className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Generuj fiszki
