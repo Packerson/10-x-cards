@@ -34,7 +34,10 @@ export function FlashCard(props: FlashCardProps) {
   const backText = isExpanded ? card.back : card.backPreview
 
   return (
-    <article className="flex h-full flex-col rounded-lg border bg-card p-4">
+    <article
+      className="flex h-full flex-col rounded-lg border bg-card p-4"
+      data-testid={`flashcard-${card.id}`}
+    >
       <header className="flex items-start justify-between gap-3">
         <h3 className="min-w-0 flex-1 text-sm font-semibold leading-snug break-words">
           {card.front}
@@ -76,6 +79,7 @@ export function FlashCard(props: FlashCardProps) {
           type="button"
           className="h-9 rounded-md border border-input bg-background px-3 text-sm"
           onClick={() => onDeleteRequest(card.id)}
+          data-testid={`flashcard-delete-${card.id}`}
         >
           Usuń
         </button>

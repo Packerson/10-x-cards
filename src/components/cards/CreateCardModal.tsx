@@ -63,6 +63,7 @@ export function CreateCardModal(props: CreateCardModalProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="create-card-title"
+      data-testid="create-card-modal"
       // Nie zamykamy na klik w tło (zgodnie z planem; wyjątek: ESC dozwolony).
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) {
@@ -86,6 +87,7 @@ export function CreateCardModal(props: CreateCardModalProps) {
             className="h-9 rounded-md border border-input bg-background px-3 text-sm"
             onClick={onClose}
             disabled={isSubmitting}
+            data-testid="create-card-close"
           >
             Zamknij
           </button>
@@ -112,6 +114,7 @@ export function CreateCardModal(props: CreateCardModalProps) {
               value={front}
               disabled={isSubmitting}
               maxLength={MAX_FRONT + 50}
+              data-testid="create-card-front-input"
               onChange={(e) => {
                 setFront(e.target.value)
                 setLocalFrontError(null)
@@ -133,6 +136,7 @@ export function CreateCardModal(props: CreateCardModalProps) {
               value={back}
               disabled={isSubmitting}
               maxLength={MAX_BACK + 100}
+              data-testid="create-card-back-input"
               onChange={(e) => {
                 setBack(e.target.value)
                 setLocalBackError(null)
@@ -157,6 +161,7 @@ export function CreateCardModal(props: CreateCardModalProps) {
               className="h-10 rounded-md border border-input bg-background px-3 text-sm"
               onClick={onClose}
               disabled={isSubmitting}
+              data-testid="create-card-cancel"
             >
               Anuluj
             </button>
@@ -164,6 +169,7 @@ export function CreateCardModal(props: CreateCardModalProps) {
               type="submit"
               className="h-10 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
               disabled={!canSubmit}
+              data-testid="create-card-submit"
             >
               {isSubmitting ? "Dodawanie..." : "Dodaj"}
             </button>

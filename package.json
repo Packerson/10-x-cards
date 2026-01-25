@@ -18,7 +18,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
-    "test:e2e:install": "playwright install chromium"
+    "test:e2e:install": "playwright install chromium",
+    "dev:e2e": "astro dev --mode test"
   },
   "dependencies": {
     "@astrojs/node": "^9.4.3",
@@ -66,7 +67,8 @@
     "lint-staged": "15.5.0",
     "prettier-plugin-astro": "0.14.1",
     "typescript-eslint": "8.28.0",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "dotenv": "^17.2.3"
   },
   "lint-staged": {
     "*.{ts,tsx,astro}": [
