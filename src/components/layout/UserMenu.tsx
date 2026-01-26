@@ -1,52 +1,49 @@
-import { useMemo, useRef } from "react"
-import { User } from "lucide-react"
+import { useMemo, useRef } from "react";
+import { User } from "lucide-react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 interface UserMenuProps {
   user: {
-    display_name: string | null
-    email: string | null
-  } | null
-  disabled?: boolean
+    display_name: string | null;
+    email: string | null;
+  } | null;
+  disabled?: boolean;
 }
 
-const MAX_LABEL_LENGTH = 15
+const MAX_LABEL_LENGTH = 15;
 
 function buildUserLabel(user: UserMenuProps["user"]): string {
-  if (!user) return "Konto"
+  if (!user) return "Konto";
 
-  const candidate = user.display_name || user.email
-  if (!candidate) return "Konto"
+  const candidate = user.display_name || user.email;
+  if (!candidate) return "Konto";
 
   if (candidate.length <= MAX_LABEL_LENGTH) {
-    return candidate
+    return candidate;
   }
 
-  return `${candidate.slice(0, Math.max(0, MAX_LABEL_LENGTH - 1))}…`
+  return `${candidate.slice(0, Math.max(0, MAX_LABEL_LENGTH - 1))}…`;
 }
 
 export function UserMenu({ user, disabled = false }: UserMenuProps) {
-  const detailsRef = useRef<HTMLDetailsElement | null>(null)
+  const detailsRef = useRef<HTMLDetailsElement | null>(null);
 
   const userLabel = useMemo(() => {
-    return buildUserLabel(user)
-  }, [user])
+    return buildUserLabel(user);
+  }, [user]);
 
   const close = () => {
-    detailsRef.current?.removeAttribute("open")
-  }
+    detailsRef.current?.removeAttribute("open");
+  };
 
   if (disabled) {
     return (
-      <span
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground/70"
-        title="Wkrótce"
-      >
+      <span className="inline-flex items-center gap-2 text-sm text-muted-foreground/70" title="Wkrótce">
         <User className="h-4 w-4" aria-hidden="true" />
         Konto
       </span>
-    )
+    );
   }
 
   return (
@@ -64,9 +61,7 @@ export function UserMenu({ user, disabled = false }: UserMenuProps) {
       </summary>
 
       <div
-        className={cn(
-          "absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-md border bg-background shadow-sm"
-        )}
+        className={cn("absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-md border bg-background shadow-sm")}
         role="menu"
         aria-label="Opcje konta"
       >
@@ -94,6 +89,5 @@ export function UserMenu({ user, disabled = false }: UserMenuProps) {
         </a>
       </div>
     </details>
-  )
+  );
 }
-

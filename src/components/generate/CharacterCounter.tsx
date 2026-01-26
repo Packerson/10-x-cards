@@ -1,10 +1,10 @@
-import { cn } from "@/lib/utils"
-import type { CharacterCounterProps } from "./types"
+import { cn } from "@/lib/utils";
+import type { CharacterCounterProps } from "./types";
 
 export function CharacterCounter({ current, min, max }: CharacterCounterProps) {
-  const isValid = current >= min && current <= max
-  const isTooShort = current < min
-  const isTooLong = current > max
+  const isValid = current >= min && current <= max;
+  const isTooShort = current < min;
+  const isTooLong = current > max;
 
   return (
     <span
@@ -18,11 +18,7 @@ export function CharacterCounter({ current, min, max }: CharacterCounterProps) {
       aria-atomic="true"
     >
       {current.toLocaleString("pl-PL")} / {max.toLocaleString("pl-PL")}
-      {isTooShort && (
-        <span className="ml-1 text-xs">
-          (min. {min.toLocaleString("pl-PL")})
-        </span>
-      )}
+      {isTooShort && <span className="ml-1 text-xs">(min. {min.toLocaleString("pl-PL")})</span>}
     </span>
-  )
+  );
 }

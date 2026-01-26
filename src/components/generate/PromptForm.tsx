@@ -1,33 +1,24 @@
-import { useCallback, type FormEvent } from "react"
-import { Button } from "@/components/ui/button"
-import { CharacterCounter } from "./CharacterCounter"
-import { MIN_PROMPT_LENGTH, MAX_PROMPT_LENGTH } from "@/lib/validators/generations"
-import type { PromptFormProps } from "./types"
+import { useCallback, type FormEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { CharacterCounter } from "./CharacterCounter";
+import { MIN_PROMPT_LENGTH, MAX_PROMPT_LENGTH } from "@/lib/validators/generations";
+import type { PromptFormProps } from "./types";
 
-export function PromptForm({
-  promptText,
-  onPromptChange,
-  onSubmit,
-  isLoading,
-  isDisabled,
-}: PromptFormProps) {
+export function PromptForm({ promptText, onPromptChange, onSubmit, isLoading, isDisabled }: PromptFormProps) {
   const handleSubmit = useCallback(
     (e: FormEvent) => {
-      e.preventDefault()
+      e.preventDefault();
       if (!isDisabled && !isLoading) {
-        onSubmit()
+        onSubmit();
       }
     },
     [isDisabled, isLoading, onSubmit]
-  )
+  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" data-testid="generate-prompt-form">
       <div className="space-y-2">
-        <label
-          htmlFor="prompt-text"
-          className="block text-sm font-medium text-foreground"
-        >
+        <label htmlFor="prompt-text" className="block text-sm font-medium text-foreground">
           Tekst źródłowy
         </label>
         <textarea
@@ -46,11 +37,7 @@ export function PromptForm({
           className="flex items-center justify-between text-sm"
           data-testid="generate-prompt-counter"
         >
-          <CharacterCounter
-            current={promptText.length}
-            min={MIN_PROMPT_LENGTH}
-            max={MAX_PROMPT_LENGTH}
-          />
+          <CharacterCounter current={promptText.length} min={MIN_PROMPT_LENGTH} max={MAX_PROMPT_LENGTH} />
         </div>
       </div>
 
@@ -63,20 +50,8 @@ export function PromptForm({
       >
         {isLoading ? (
           <>
-            <svg
-              className="mr-2 size-4 animate-spin"
-              fill="none"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
+            <svg className="mr-2 size-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path
                 className="opacity-75"
                 fill="currentColor"
@@ -90,5 +65,5 @@ export function PromptForm({
         )}
       </Button>
     </form>
-  )
+  );
 }

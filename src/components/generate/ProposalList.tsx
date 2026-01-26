@@ -1,9 +1,9 @@
-import { ProposalCard } from "./ProposalCard"
-import type { ProposalListProps } from "./types"
+import { ProposalCard } from "./ProposalCard";
+import type { ProposalListProps } from "./types";
 
 export function ProposalList({ proposals, onAction, onEdit }: ProposalListProps) {
   if (proposals.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -14,12 +14,7 @@ export function ProposalList({ proposals, onAction, onEdit }: ProposalListProps)
       data-testid="proposal-list"
     >
       {proposals.map((proposal) => (
-        <div
-          key={proposal.id}
-          role="listitem"
-          className="flex"
-          data-testid={`proposal-item-${proposal.id}`}
-        >
+        <div key={proposal.id} role="listitem" className="flex" data-testid={`proposal-item-${proposal.id}`}>
           <ProposalCard
             proposal={proposal}
             onAction={(action) => onAction(proposal.id, action)}
@@ -28,5 +23,5 @@ export function ProposalList({ proposals, onAction, onEdit }: ProposalListProps)
         </div>
       ))}
     </div>
-  )
+  );
 }

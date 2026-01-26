@@ -1,7 +1,7 @@
-import { CardsContent } from "./CardsContent"
-import { CardsHeader } from "./CardsHeader"
-import { CreateCardModal } from "./CreateCardModal"
-import { useCardsView } from "./useCardsView"
+import { CardsContent } from "./CardsContent";
+import { CardsHeader } from "./CardsHeader";
+import { CreateCardModal } from "./CreateCardModal";
+import { useCardsView } from "./useCardsView";
 
 export function CardsView() {
   const {
@@ -18,7 +18,7 @@ export function CardsView() {
     createServerError,
     createFrontError,
     deleteState,
-  } = useCardsView()
+  } = useCardsView();
 
   return (
     <div>
@@ -69,6 +69,5 @@ export function CardsView() {
         onDeleteConfirm={actions.confirmDelete}
       />
     </div>
-  )
+  );
 }
-

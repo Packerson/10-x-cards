@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "zod";
 
 /**
  * Body dla endpointu PATCH /api/profile (MVP).
@@ -7,12 +7,7 @@ import { z } from "zod"
  * ale finalna wartość nadal musi należeć do enuma.
  */
 export const updateProfileSchema = z.object({
-  locale: z.preprocess(
-    (val) => (typeof val === "string" ? val.trim() : val),
-    z.enum(["pl", "en"]),
-  ),
-})
+  locale: z.preprocess((val) => (typeof val === "string" ? val.trim() : val), z.enum(["pl", "en"])),
+});
 
-export type UpdateProfileInput = z.infer<typeof updateProfileSchema>
-
-
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

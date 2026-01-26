@@ -1,6 +1,5 @@
-import { createHash } from "node:crypto"
-import type { PostgrestError } from "@supabase/supabase-js"
-import type { SupabaseClient } from "../../db/supabase.client.ts"
+import { createHash } from "node:crypto";
+import type { SupabaseClient } from "../../db/supabase.client.ts";
 import type {
   CardProposalDTO,
   CreateGenerationCommand,
@@ -10,10 +9,10 @@ import type {
   GenerationErrorsListResponseDTO,
   GenerationsListQuery,
   GenerationsListResponseDTO,
-  UserLocale
-} from "../../types.ts"
-import type { Json } from "../../db/database.types.ts"
-import { createGenerationSchema } from "../validators/generations.ts"
+  UserLocale,
+} from "../../types.ts";
+import type { Json } from "../../db/database.types.ts";
+import { createGenerationSchema } from "../validators/generations.ts";
 import {
   OpenRouterConfigError,
   OpenRouterNetworkError,
@@ -23,14 +22,13 @@ import {
   OpenRouterService,
   OpenRouterValidationError,
   buildSystemMessage,
-} from "./openrouter.service.ts"
-import type { OpenRouterParams, OpenRouterResponseFormat } from "../openrouter.types.ts"
-import { getProfile } from "./profile.service.ts"
-
+} from "./openrouter.service.ts";
+import type { OpenRouterParams, OpenRouterResponseFormat } from "../openrouter.types.ts";
+import { getProfile } from "./profile.service.ts";
 
 interface CreateGenerationDeps {
-  supabase: SupabaseClient
-  userId: string
+  supabase: SupabaseClient;
+  userId: string;
 }
 
 type CreateGenerationError =
@@ -39,16 +37,16 @@ type CreateGenerationError =
   | { code: "rate_limit"; details?: unknown; retryAfterMs?: number }
   | { code: "config_error"; details?: unknown }
   | { code: "openrouter_error"; details?: unknown }
-  | { code: "database_error"; details?: unknown }
+  | { code: "database_error"; details?: unknown };
 
-const DEFAULT_CARD_COUNT = 10
-const DEFAULT_MODEL = "openai/gpt-4.1-mini"
+const DEFAULT_CARD_COUNT = 10;
+const DEFAULT_MODEL = "openai/gpt-4.1-mini";
 const DEFAULT_MODEL_SETTINGS: OpenRouterParams = {
   temperature: 0.7,
   max_tokens: 800,
   top_p: 0.9,
   presence_penalty: 0,
-}
+};
 const CARD_PROPOSALS_RESPONSE_FORMAT: OpenRouterResponseFormat = {
   type: "json_schema",
   json_schema: {
@@ -74,37 +72,33 @@ const CARD_PROPOSALS_RESPONSE_FORMAT: OpenRouterResponseFormat = {
       additionalProperties: false,
     },
   },
-}
+};
 
 export async function createGeneration(
   { supabase, userId }: CreateGenerationDeps,
-  payload: CreateGenerationCommand,
+  payload: CreateGenerationCommand
 ): Promise<{ data?: GenerationCreatedDTO; error?: CreateGenerationError }> {
-  const validation = createGenerationSchema.safeParse(payload)
+  const validation = createGenerationSchema.safeParse(payload);
   if (!validation.success) {
-    return { error: { code: "validation_error", details: validation.error.format() } }
+    return { error: { code: "validation_error", details: validation.error.format() } };
   }
 
-  const promptText = validation.data.prompt_text
-  const promptHash = createHash("md5").update(promptText).digest("hex")
+  const promptText = validation.data.prompt_text;
+  const promptHash = createHash("md5").update(promptText).digest("hex");
 
   const { data: existing, error: findError } = await supabase
     .from("generations")
     .select("id")
     .eq("user_id", userId)
     .eq("prompt_hash", promptHash)
-    .limit(1)
+    .limit(1);
 
   if (findError) {
-    console.error("createGeneration: duplicate check failed", {
-      promptHash,
-      error: findError,
-    })
-    return { error: { code: "database_error", details: findError.message } }
+    return { error: { code: "database_error", details: findError.message } };
   }
 
   if (existing && existing.length > 0) {
-    return { error: { code: "duplicate_prompt" } }
+    return { error: { code: "duplicate_prompt" } };
   }
 
   const { data: inserted, error: insertError } = await supabase
@@ -123,42 +117,36 @@ export async function createGeneration(
       model_settings: DEFAULT_MODEL_SETTINGS as Json,
     })
     .select("id, prompt_text, total_generated, status")
-    .single()
+    .single();
 
   if (insertError || !inserted) {
-    console.error("createGeneration: insert failed", {
-      userId,
-      promptHash,
-      error: insertError,
-    })
-    return { error: { code: "database_error", details: insertError?.message } }
+    return { error: { code: "database_error", details: insertError?.message } };
   }
 
-  let cardProposals: CardProposalDTO[] = []
+  let cardProposals: CardProposalDTO[] = [];
   try {
-    const openRouter = new OpenRouterService()
-    const locale = await resolveLocale({ supabase, userId })
+    const openRouter = new OpenRouterService();
+    const locale = await resolveLocale({ supabase, userId });
     const structured = await openRouter.createStructuredCompletion<{
-      cards: Array<{ front: string; back: string }>
+      cards: { front: string; back: string }[];
     }>({
       systemMessage: buildSystemPrompt(locale),
       userMessage: promptText,
       model: openRouter.defaultModel,
       responseFormat: CARD_PROPOSALS_RESPONSE_FORMAT,
-    })
+    });
 
-    cardProposals = normalizeCardProposals(structured?.cards)
+    cardProposals = normalizeCardProposals(structured?.cards);
     if (cardProposals.length === 0) {
-      throw new Error("empty_card_proposals")
+      throw new Error("empty_card_proposals");
     }
   } catch (processingError) {
-    const errorMessage =
-      processingError instanceof Error ? processingError.message : "unknown_processing_error"
-    const mappedError = mapOpenRouterError(processingError, errorMessage)
+    const errorMessage = processingError instanceof Error ? processingError.message : "unknown_processing_error";
+    const mappedError = mapOpenRouterError(processingError, errorMessage);
 
-    await logGenerationError(supabase, inserted.id, mappedError.logCode, errorMessage)
+    await logGenerationError(supabase, inserted.id, mappedError.logCode, errorMessage);
 
-    return { error: mappedError.apiError }
+    return { error: mappedError.apiError };
   }
 
   const { data: updated, error: updateError } = await supabase
@@ -166,14 +154,10 @@ export async function createGeneration(
     .update({ total_generated: cardProposals.length })
     .eq("id", inserted.id)
     .select("id, prompt_text, total_generated, status")
-    .single()
+    .single();
 
   if (updateError || !updated) {
-    console.error("createGeneration: update failed", {
-      generationId: inserted.id,
-      error: updateError,
-    })
-    return { error: { code: "database_error", details: updateError?.message } }
+    return { error: { code: "database_error", details: updateError?.message } };
   }
 
   return {
@@ -181,22 +165,22 @@ export async function createGeneration(
       ...updated,
       card_proposals: cardProposals,
     },
-  }
+  };
 }
 
 function mapOpenRouterError(
   error: unknown,
-  fallbackMessage: string,
+  fallbackMessage: string
 ): { apiError: CreateGenerationError; logCode: string } {
   if (error instanceof OpenRouterValidationError) {
     return {
       apiError: { code: "validation_error", details: error.message },
       logCode: "validation_error",
-    }
+    };
   }
 
   if (error instanceof OpenRouterConfigError) {
-    return { apiError: { code: "config_error", details: error.message }, logCode: "config_error" }
+    return { apiError: { code: "config_error", details: error.message }, logCode: "config_error" };
   }
 
   if (error instanceof OpenRouterRateLimitError) {
@@ -207,7 +191,7 @@ function mapOpenRouterError(
         retryAfterMs: error.retryAfterMs,
       },
       logCode: "rate_limit_error",
-    }
+    };
   }
 
   if (error instanceof OpenRouterRequestError) {
@@ -221,25 +205,23 @@ function mapOpenRouterError(
         },
       },
       logCode: "request_error",
-    }
+    };
   }
 
   if (error instanceof OpenRouterResponseSchemaError) {
-    return { apiError: { code: "openrouter_error", details: error.message }, logCode: "schema_error" }
+    return { apiError: { code: "openrouter_error", details: error.message }, logCode: "schema_error" };
   }
 
   if (error instanceof OpenRouterNetworkError) {
-    return { apiError: { code: "openrouter_error", details: error.message }, logCode: "network_error" }
+    return { apiError: { code: "openrouter_error", details: error.message }, logCode: "network_error" };
   }
 
-  return { apiError: { code: "openrouter_error", details: fallbackMessage }, logCode: "unknown_error" }
+  return { apiError: { code: "openrouter_error", details: fallbackMessage }, logCode: "unknown_error" };
 }
 
-function normalizeCardProposals(
-  cards: Array<{ front?: string; back?: string }> | undefined,
-): CardProposalDTO[] {
+function normalizeCardProposals(cards: { front?: string; back?: string }[] | undefined): CardProposalDTO[] {
   if (!cards || !Array.isArray(cards)) {
-    return []
+    return [];
   }
 
   return cards
@@ -248,96 +230,84 @@ function normalizeCardProposals(
       back: (card.back ?? "").trim(),
       source: "ai_created" as CardProposalDTO["source"],
     }))
-    .filter((card) => card.front.length > 0 && card.back.length > 0)
+    .filter((card) => card.front.length > 0 && card.back.length > 0);
 }
 
 function buildSystemPrompt(locale: UserLocale) {
   if (locale === "en") {
-    return `${buildSystemMessage(locale)} Generate exactly ${DEFAULT_CARD_COUNT} flashcards from the provided text.`
+    return `${buildSystemMessage(locale)} Generate exactly ${DEFAULT_CARD_COUNT} flashcards from the provided text.`;
   }
 
-  return `${buildSystemMessage(locale)} Wygeneruj dokładnie ${DEFAULT_CARD_COUNT} fiszek na podstawie dostarczonego tekstu.`
+  return `${buildSystemMessage(locale)} Wygeneruj dokładnie ${DEFAULT_CARD_COUNT} fiszek na podstawie dostarczonego tekstu.`;
 }
 
-async function resolveLocale({
-  supabase,
-  userId,
-}: {
-  supabase: SupabaseClient
-  userId: string
-}): Promise<UserLocale> {
-  const profile = await getProfile({ supabase, userId })
+async function resolveLocale({ supabase, userId }: { supabase: SupabaseClient; userId: string }): Promise<UserLocale> {
+  const profile = await getProfile({ supabase, userId });
   if (profile.data?.locale) {
-    return profile.data.locale
+    return profile.data.locale;
   }
 
   if (profile.error) {
-    console.error("createGeneration: failed to resolve locale, fallback to pl", {
-      userId,
-      error: profile.error,
-    })
+    return "pl";
   }
 
-  return "pl"
+  return "pl";
 }
 
 async function logGenerationError(
   supabase: SupabaseClient,
   generationId: number,
   errorCode: string,
-  errorMessage: string,
+  errorMessage: string
 ) {
   const [statusUpdate, errorInsert] = await Promise.all([
     supabase.from("generations").update({ status: "failed" }).eq("id", generationId),
     supabase
       .from("generation_errors")
       .insert({ generation_id: generationId, error_code: errorCode, error_message: errorMessage }),
-  ])
+  ]);
 
-  if (statusUpdate.error || errorInsert.error) {
-    const dbErrors: PostgrestError[] = []
-    if (statusUpdate.error) dbErrors.push(statusUpdate.error)
-    if (errorInsert.error) dbErrors.push(errorInsert.error)
-    console.error("Failed to log generation error", dbErrors)
-  }
+  void statusUpdate;
+  void errorInsert;
 }
 
 interface ListGenerationsDeps {
-  supabase: SupabaseClient
-  userId: string
+  supabase: SupabaseClient;
+  userId: string;
 }
 
-type ListGenerationsError = { code: "database_error"; details?: unknown }
+interface ListGenerationsError {
+  code: "database_error";
+  details?: unknown;
+}
 
 export async function listGenerations(
   { supabase, userId }: ListGenerationsDeps,
-  params: GenerationsListQuery,
+  params: GenerationsListQuery
 ): Promise<{ data?: GenerationsListResponseDTO; error?: ListGenerationsError }> {
-  const page = params.page ?? 1
-  const limit = params.limit ?? 10
-  const sort = params.sort ?? "created_at"
-  const order = params.order ?? "desc"
+  const page = params.page ?? 1;
+  const limit = params.limit ?? 10;
+  const sort = params.sort ?? "created_at";
+  const order = params.order ?? "desc";
 
-  const offset = (page - 1) * limit
-  const to = offset + limit - 1
+  const offset = (page - 1) * limit;
+  const to = offset + limit - 1;
 
   const { data, error, count } = await supabase
     .from("generations")
-    .select(
-      "id, prompt_text, total_generated, total_accepted, total_rejected, created_at, updated_at, model, status",
-      { count: "exact" },
-    )
+    .select("id, prompt_text, total_generated, total_accepted, total_rejected, created_at, updated_at, model, status", {
+      count: "exact",
+    })
     .eq("user_id", userId)
     .order(sort, { ascending: order === "asc" })
-    .range(offset, to)
+    .range(offset, to);
 
   if (error) {
-    console.error("listGenerations: query failed", { userId, params, error })
-    return { error: { code: "database_error", details: error.message } }
+    return { error: { code: "database_error", details: error.message } };
   }
 
-  const totalItems = count ?? 0
-  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / limit)
+  const totalItems = count ?? 0;
+  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / limit);
 
   return {
     data: {
@@ -351,17 +321,15 @@ export async function listGenerations(
         order,
       },
     },
-  }
+  };
 }
 
 interface GetGenerationByIdDeps {
-  supabase: SupabaseClient
-  userId: string
+  supabase: SupabaseClient;
+  userId: string;
 }
 
-type GetGenerationByIdError =
-  | { code: "not_found" }
-  | { code: "database_error"; details?: unknown }
+type GetGenerationByIdError = { code: "not_found" } | { code: "database_error"; details?: unknown };
 
 /**
  * Zwraca pojedynczą generację należącą do użytkownika.
@@ -371,47 +339,43 @@ type GetGenerationByIdError =
  */
 export async function getGenerationById(
   { supabase, userId }: GetGenerationByIdDeps,
-  generationId: number,
+  generationId: number
 ): Promise<{ data?: GenerationDetailDTO; error?: GetGenerationByIdError }> {
   try {
     const { data, error } = await supabase
       .from("generations")
       .select(
-        "id, user_id, prompt_text, prompt_hash, status, total_generated, total_accepted, total_rejected, model, model_settings, cost_usd, duration_s, created_at, updated_at",
+        "id, user_id, prompt_text, prompt_hash, status, total_generated, total_accepted, total_rejected, model, model_settings, cost_usd, duration_s, created_at, updated_at"
       )
       .eq("user_id", userId)
       .eq("id", generationId)
-      .maybeSingle()
+      .maybeSingle();
 
     if (error) {
-      console.error("getGenerationById: query failed", { userId, generationId, error })
-      return { error: { code: "database_error", details: error.message } }
+      return { error: { code: "database_error", details: error.message } };
     }
 
     if (!data) {
-      return { error: { code: "not_found" } }
+      return { error: { code: "not_found" } };
     }
 
-    return { data }
+    return { data };
   } catch (err) {
-    console.error("getGenerationById: unexpected failure", { userId, generationId, err })
     return {
       error: {
         code: "database_error",
         details: err instanceof Error ? err.message : "unknown_error",
       },
-    }
+    };
   }
 }
 
 interface DeleteGenerationByIdDeps {
-  supabase: SupabaseClient
-  userId: string
+  supabase: SupabaseClient;
+  userId: string;
 }
 
-type DeleteGenerationByIdError =
-  | { code: "not_found" }
-  | { code: "database_error"; details?: unknown }
+type DeleteGenerationByIdError = { code: "not_found" } | { code: "database_error"; details?: unknown };
 
 /**
  * Usuwa generację użytkownika.
@@ -424,7 +388,7 @@ type DeleteGenerationByIdError =
  */
 export async function deleteGenerationById(
   { supabase, userId }: DeleteGenerationByIdDeps,
-  generationId: number,
+  generationId: number
 ): Promise<{ data?: { id: number }; error?: DeleteGenerationByIdError }> {
   try {
     const { data, error } = await supabase
@@ -433,44 +397,33 @@ export async function deleteGenerationById(
       .eq("user_id", userId)
       .eq("id", generationId)
       .select("id")
-      .maybeSingle()
+      .maybeSingle();
 
     if (error) {
-      console.error("deleteGenerationById: delete failed", {
-        userId,
-        generationId,
-        db_code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-      })
-      return { error: { code: "database_error", details: error.message } }
+      return { error: { code: "database_error", details: error.message } };
     }
 
     if (!data) {
-      return { error: { code: "not_found" } }
+      return { error: { code: "not_found" } };
     }
 
-    return { data: { id: data.id } }
+    return { data: { id: data.id } };
   } catch (err) {
-    console.error("deleteGenerationById: unexpected failure", { userId, generationId, err })
     return {
       error: {
         code: "database_error",
         details: err instanceof Error ? err.message : "unknown_error",
       },
-    }
+    };
   }
 }
 
 interface ListGenerationErrorsDeps {
-  supabase: SupabaseClient
-  userId: string
+  supabase: SupabaseClient;
+  userId: string;
 }
 
-type ListGenerationErrorsError =
-  | { code: "not_found" }
-  | { code: "database_error"; details?: unknown }
+type ListGenerationErrorsError = { code: "not_found" } | { code: "database_error"; details?: unknown };
 
 /**
  * Zwraca paginowaną listę błędów generacji należącej do użytkownika.
@@ -482,16 +435,16 @@ type ListGenerationErrorsError =
 export async function listGenerationErrors(
   { supabase, userId }: ListGenerationErrorsDeps,
   generationId: number,
-  params: GenerationErrorsListQuery,
+  params: GenerationErrorsListQuery
 ): Promise<{ data?: GenerationErrorsListResponseDTO; error?: ListGenerationErrorsError }> {
-  const page = params.page ?? 1
-  const limit = params.limit ?? 10
-  const sort = params.sort ?? "created_at"
-  const order = params.order ?? "desc"
-  const errorCode = params.error_code
+  const page = params.page ?? 1;
+  const limit = params.limit ?? 10;
+  const sort = params.sort ?? "created_at";
+  const order = params.order ?? "desc";
+  const errorCode = params.error_code;
 
-  const offset = (page - 1) * limit
-  const to = offset + limit - 1
+  const offset = (page - 1) * limit;
+  const to = offset + limit - 1;
 
   try {
     const { data: generation, error: generationError } = await supabase
@@ -499,46 +452,33 @@ export async function listGenerationErrors(
       .select("id")
       .eq("user_id", userId)
       .eq("id", generationId)
-      .maybeSingle()
+      .maybeSingle();
 
     if (generationError) {
-      console.error("listGenerationErrors: generation check failed", {
-        userId,
-        generationId,
-        error: generationError,
-      })
-      return { error: { code: "database_error", details: generationError.message } }
+      return { error: { code: "database_error", details: generationError.message } };
     }
 
     if (!generation) {
-      return { error: { code: "not_found" } }
+      return { error: { code: "not_found" } };
     }
 
     let query = supabase
       .from("generation_errors")
       .select("id, generation_id, error_code, error_message, created_at", { count: "exact" })
-      .eq("generation_id", generationId)
+      .eq("generation_id", generationId);
 
     if (errorCode) {
-      query = query.eq("error_code", errorCode)
+      query = query.eq("error_code", errorCode);
     }
 
-    const { data, error, count } = await query
-      .order(sort, { ascending: order === "asc" })
-      .range(offset, to)
+    const { data, error, count } = await query.order(sort, { ascending: order === "asc" }).range(offset, to);
 
     if (error) {
-      console.error("listGenerationErrors: query failed", {
-        userId,
-        generationId,
-        params,
-        error,
-      })
-      return { error: { code: "database_error", details: error.message } }
+      return { error: { code: "database_error", details: error.message } };
     }
 
-    const totalItems = count ?? 0
-    const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / limit)
+    const totalItems = count ?? 0;
+    const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / limit);
 
     return {
       data: {
@@ -552,15 +492,13 @@ export async function listGenerationErrors(
           order,
         },
       },
-    }
+    };
   } catch (err) {
-    console.error("listGenerationErrors: unexpected failure", { userId, generationId, err })
     return {
       error: {
         code: "database_error",
         details: err instanceof Error ? err.message : "unknown_error",
       },
-    }
+    };
   }
 }
-

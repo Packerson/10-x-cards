@@ -6,144 +6,125 @@ import type {
   CardDetailDTO,
   DeleteCardResultDTO,
   UpdateCardCommand,
-} from "@/types"
-import { ApiError, type ApiErrorResponse } from "./api-error"
+} from "@/types";
+import { ApiError, type ApiErrorResponse } from "./api-error";
 
 function toQueryString(query: Record<string, unknown>): string {
-  const params = new URLSearchParams()
+  const params = new URLSearchParams();
 
   for (const [key, value] of Object.entries(query)) {
-    if (value === undefined || value === null) continue
-    params.set(key, String(value))
+    if (value === undefined || value === null) continue;
+    params.set(key, String(value));
   }
 
-  const qs = params.toString()
-  return qs.length > 0 ? `?${qs}` : ""
+  const qs = params.toString();
+  return qs.length > 0 ? `?${qs}` : "";
 }
 
-export async function createCards(
-  command: CreateCardsCommand
-): Promise<CreateCardsResultDTO> {
-  let response: Response
+export async function createCards(command: CreateCardsCommand): Promise<CreateCardsResultDTO> {
+  let response: Response;
 
   try {
     response = await fetch("/api/cards", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(command),
-    })
+    });
   } catch {
-    throw new ApiError(0, "network_error", "Brak połączenia z siecią")
+    throw new ApiError(0, "network_error", "Brak połączenia z siecią");
   }
 
   if (!response.ok) {
-    let errorBody: ApiErrorResponse
+    let errorBody: ApiErrorResponse;
 
     try {
-      errorBody = await response.json()
+      errorBody = await response.json();
     } catch {
-      throw new ApiError(response.status, "server_error", "Nieoczekiwany błąd serwera")
+      throw new ApiError(response.status, "server_error", "Nieoczekiwany błąd serwera");
     }
 
-    throw ApiError.fromResponse(response.status, errorBody)
+    throw ApiError.fromResponse(response.status, errorBody);
   }
 
-  return response.json()
+  return response.json();
 }
 
-export async function listCards(
-  query: CardsListQuery
-): Promise<CardsListResponseDTO> {
-  let response: Response
+export async function listCards(query: CardsListQuery): Promise<CardsListResponseDTO> {
+  let response: Response;
 
   try {
     response = await fetch(`/api/cards${toQueryString(query)}`, {
       method: "GET",
-    })
+    });
   } catch {
-    throw new ApiError(0, "network_error", "Brak połączenia z siecią")
+    throw new ApiError(0, "network_error", "Brak połączenia z siecią");
   }
 
   if (!response.ok) {
-    let errorBody: ApiErrorResponse
+    let errorBody: ApiErrorResponse;
 
     try {
-      errorBody = await response.json()
+      errorBody = await response.json();
     } catch {
-      throw new ApiError(
-        response.status,
-        "server_error",
-        "Nieoczekiwany błąd serwera"
-      )
+      throw new ApiError(response.status, "server_error", "Nieoczekiwany błąd serwera");
     }
 
-    throw ApiError.fromResponse(response.status, errorBody)
+    throw ApiError.fromResponse(response.status, errorBody);
   }
 
-  return response.json()
+  return response.json();
 }
 
-export async function updateCard(
-  id: number,
-  patch: UpdateCardCommand
-): Promise<CardDetailDTO> {
-  let response: Response
+export async function updateCard(id: number, patch: UpdateCardCommand): Promise<CardDetailDTO> {
+  let response: Response;
 
   try {
     response = await fetch(`/api/cards/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
-    })
+    });
   } catch {
-    throw new ApiError(0, "network_error", "Brak połączenia z siecią")
+    throw new ApiError(0, "network_error", "Brak połączenia z siecią");
   }
 
   if (!response.ok) {
-    let errorBody: ApiErrorResponse
+    let errorBody: ApiErrorResponse;
 
     try {
-      errorBody = await response.json()
+      errorBody = await response.json();
     } catch {
-      throw new ApiError(
-        response.status,
-        "server_error",
-        "Nieoczekiwany błąd serwera"
-      )
+      throw new ApiError(response.status, "server_error", "Nieoczekiwany błąd serwera");
     }
 
-    throw ApiError.fromResponse(response.status, errorBody)
+    throw ApiError.fromResponse(response.status, errorBody);
   }
 
-  return response.json()
+  return response.json();
 }
 
 export async function deleteCard(id: number): Promise<DeleteCardResultDTO> {
-  let response: Response
+  let response: Response;
 
   try {
     response = await fetch(`/api/cards/${id}`, {
       method: "DELETE",
-    })
+    });
   } catch {
-    throw new ApiError(0, "network_error", "Brak połączenia z siecią")
+    throw new ApiError(0, "network_error", "Brak połączenia z siecią");
   }
 
   if (!response.ok) {
-    let errorBody: ApiErrorResponse
+    let errorBody: ApiErrorResponse;
 
     try {
-      errorBody = await response.json()
+      errorBody = await response.json();
     } catch {
-      throw new ApiError(
-        response.status,
-        "server_error",
-        "Nieoczekiwany błąd serwera"
-      )
+      throw new ApiError(response.status, "server_error", "Nieoczekiwany błąd serwera");
     }
 
-    throw ApiError.fromResponse(response.status, errorBody)
+    throw ApiError.fromResponse(response.status, errorBody);
   }
 
-  return response.json()
+  return response.json();
 }

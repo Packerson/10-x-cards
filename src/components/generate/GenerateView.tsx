@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react"
-import { useGenerateFlashcards } from "./useGenerateFlashcards"
-import { PromptForm } from "./PromptForm"
-import { LoadingOverlay } from "./LoadingOverlay"
-import { ErrorMessage } from "./ErrorMessage"
-import { ProposalSection } from "./ProposalSection"
+import { useEffect, useState } from "react";
+import { useGenerateFlashcards } from "./useGenerateFlashcards";
+import { PromptForm } from "./PromptForm";
+import { LoadingOverlay } from "./LoadingOverlay";
+import { ErrorMessage } from "./ErrorMessage";
+import { ProposalSection } from "./ProposalSection";
 
 export function GenerateView() {
-  const [isHydrated, setIsHydrated] = useState(false)
+  const [isHydrated, setIsHydrated] = useState(false);
   const {
     state,
     isPromptValid,
@@ -18,24 +18,20 @@ export function GenerateView() {
     saveAcceptedCards,
     dismissError,
     retryLastAction,
-  } = useGenerateFlashcards()
+  } = useGenerateFlashcards();
 
-  const { promptText, isGenerating, isSaving, error, generationId, proposals } = state
-  const hasProposals = proposals.length > 0
+  const { promptText, isGenerating, isSaving, error, generationId, proposals } = state;
+  const hasProposals = proposals.length > 0;
 
   useEffect(() => {
-    setIsHydrated(true)
-  }, [])
+    setIsHydrated(true);
+  }, []);
 
   return (
     <div data-testid="generate-view" data-hydrated={isHydrated ? "true" : "false"}>
       <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Generuj fiszki
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Wklej tekst źródłowy, a AI wygeneruje propozycje fiszek do nauki.
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Generuj fiszki</h1>
+        <p className="mt-2 text-muted-foreground">Wklej tekst źródłowy, a AI wygeneruje propozycje fiszek do nauki.</p>
       </header>
 
       {isGenerating && <LoadingOverlay />}
@@ -95,11 +91,11 @@ export function GenerateView() {
             </div>
             <h3 className="text-lg font-medium text-foreground">Brak propozycji</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              Wklej tekst powyżej i kliknij "Generuj fiszki", aby rozpocząć.
+              Wklej tekst powyżej i kliknij &quot;Generuj fiszki&quot;, aby rozpocząć.
             </p>
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

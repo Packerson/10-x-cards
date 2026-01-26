@@ -1,0 +1,124 @@
+name: Test & Comment on Pull Request
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  lint:
+    name: Lint Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+  
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Run unit tests with coverage
+        run: npm run test:unit:coverage
+
+      - name: Upload unit coverage
+        uses: actions/upload-artifact@v6
+        with:
+          name: unit-coverage
+          path: coverage
+          retention-days: 5
+
+  e2e-test:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    environment: integration
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      E2E_USERNAME_ID: ${{ secrets.E2E_USERNAME_ID }}
+      E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+  
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps chromium
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+      - name: Upload E2E test artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 5
+
+  status-comment:
+    name: Status Comment
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - unit-test
+      - e2e-test
+    if: ${{ always() }}
+    env:
+      LINT_RESULT: ${{ needs.lint.result }}
+      UNIT_RESULT: ${{ needs.unit-test.result }}
+      E2E_RESULT: ${{ needs.e2e-test.result }}
+    steps:
+      - name: Comment on PR
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+            const results = [
+              { label: "Lint", value: process.env.LINT_RESULT },
+              { label: "Unit tests", value: process.env.UNIT_RESULT },
+              { label: "E2E tests", value: process.env.E2E_RESULT }
+            ]
+            const statusLine = (value) => {
+              if (value === "success") return "✅ sukces"
+              if (value === "failure") return "❌ błąd"
+              if (value === "cancelled") return "⚠️ anulowane"
+              if (value === "skipped") return "⏭️ pominięte"
+              return `❔ ${value || "nieznany"}`
+            }
+            const body = [
+              "Status workflow:",
+              ...results.map(({ label, value }) => ` - ${label}: ${statusLine(value)}`),
+              `Run: ${runUrl}`
+            ].join("\\n")
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body
+            })

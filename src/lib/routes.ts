@@ -1,4 +1,4 @@
-export const DEFAULT_LOGIN_PATH = "/"
+export const DEFAULT_LOGIN_PATH = "/";
 
 /**
  * Ścieżka logowania (placeholder).
@@ -7,7 +7,7 @@ export const DEFAULT_LOGIN_PATH = "/"
  * istnienia żadnego route typu `/login`.
  */
 export function getLoginPath(): string {
-  return DEFAULT_LOGIN_PATH
+  return DEFAULT_LOGIN_PATH;
 }
 
 /**
@@ -21,4 +21,3 @@ export function redirectToLogin(): void {
   // if (typeof window === "undefined") return
   // window.location.assign(getLoginPath())
 }
-

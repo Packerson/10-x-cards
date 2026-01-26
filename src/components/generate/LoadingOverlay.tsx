@@ -1,4 +1,4 @@
-import type { LoadingOverlayProps } from "./types"
+import type { LoadingOverlayProps } from "./types";
 
 export function LoadingOverlay({ message = "Generowanie fiszek..." }: LoadingOverlayProps) {
   return (
@@ -17,5 +17,5 @@ export function LoadingOverlay({ message = "Generowanie fiszek..." }: LoadingOve
         <p className="text-lg font-medium text-foreground">{message}</p>
       </div>
     </div>
-  )
+  );
 }

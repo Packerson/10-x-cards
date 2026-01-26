@@ -1,21 +1,21 @@
 export interface PaginationControlsProps {
-  page: number
-  limit: number
-  totalPages: number
-  totalItems: number
-  isBusy?: boolean
-  onPageChange: (page: number) => void
-  onLimitChange: (limit: number) => void
+  page: number;
+  limit: number;
+  totalPages: number;
+  totalItems: number;
+  isBusy?: boolean;
+  onPageChange: (page: number) => void;
+  onLimitChange: (limit: number) => void;
 }
 
 export function PaginationControls(props: PaginationControlsProps) {
-  const { page, limit, totalPages, totalItems, isBusy, onPageChange, onLimitChange } = props
+  const { page, limit, totalPages, totalItems, isBusy, onPageChange, onLimitChange } = props;
 
-  const canPrev = page > 1 && !isBusy
-  const canNext = page < totalPages && !isBusy
+  const canPrev = page > 1 && !isBusy;
+  const canNext = page < totalPages && !isBusy;
 
-  const from = totalItems === 0 ? 0 : (page - 1) * limit + 1
-  const to = Math.min(totalItems, page * limit)
+  const from = totalItems === 0 ? 0 : (page - 1) * limit + 1;
+  const to = Math.min(totalItems, page * limit);
 
   return (
     <section aria-label="Paginacja" className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -62,6 +62,5 @@ export function PaginationControls(props: PaginationControlsProps) {
         </div>
       </div>
     </section>
-  )
+  );
 }
-
