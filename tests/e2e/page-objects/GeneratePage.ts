@@ -1,4 +1,4 @@
-import type { Locator, Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
 
 export class GeneratePage extends BasePage {
@@ -52,6 +52,7 @@ export class GeneratePage extends BasePage {
   }
 
   async fillPrompt(text: string): Promise<void> {
+    await expect(this.root).toHaveAttribute("data-hydrated", "true");
     await this.promptInput.fill(text);
   }
 

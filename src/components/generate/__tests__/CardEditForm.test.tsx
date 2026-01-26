@@ -47,9 +47,28 @@ describe("CardEditForm", () => {
 
     await user.click(screen.getByLabelText("Przód"));
     await user.keyboard("{Escape}");
-    expect(onCancel).toHaveBeenCalledTimes(2);
+    expect(onCancel).toHaveBeenCalledTimes(1);
 
     await user.keyboard("{Escape}");
-    expect(onCancel).toHaveBeenCalledTimes(4);
+    expect(onCancel).toHaveBeenCalledTimes(2);
+  });
+
+  it("saves when clicking outside the form", async () => {
+    const onSave = vi.fn();
+    const onCancel = vi.fn();
+    const user = userEvent.setup();
+
+    render(
+      <div>
+        <CardEditForm initialFront="Front" initialBack="Back" onSave={onSave} onCancel={onCancel} />
+        <button type="button">Outside</button>
+      </div>
+    );
+
+    await user.click(screen.getByText("Outside"));
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onSave).toHaveBeenCalledWith("Front", "Back");
+    expect(onCancel).not.toHaveBeenCalled();
   });
 });
