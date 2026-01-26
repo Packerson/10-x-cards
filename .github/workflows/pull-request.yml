@@ -2,32 +2,49 @@ name: Test & Comment on Pull Request
 
 on:
   pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened]
 
 jobs:
   lint:
-    name: Lint
+    name: Lint Checks
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
       - name: Setup Node
-        uses: ./.github/actions/setup-node
-      - name: Lint
-        run: npm run lint
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint linting
+        run: npm run lint:check
 
   unit-test:
     name: Unit Tests
     runs-on: ubuntu-latest
     needs: lint
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+  
       - name: Setup Node
-        uses: ./.github/actions/setup-node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
       - name: Run unit tests with coverage
         run: npm run test:unit:coverage
+
       - name: Upload unit coverage
         uses: actions/upload-artifact@v6
         with:
           name: unit-coverage
           path: coverage
-          if-no-files-found: error
+          retention-days: 5
 
   e2e-test:
     name: E2E Tests
@@ -42,20 +59,27 @@ jobs:
       E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
       E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+  
       - name: Setup Node
-        uses: ./.github/actions/setup-node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
       - name: Install Playwright browsers
-        run: npm run test:e2e:install
-      - name: Run e2e tests
+        run: npx playwright install chromium --with-deps chromium
+
+      - name: Run E2E tests
         run: npm run test:e2e
-      - name: Upload e2e report
+
+      - name: Upload E2E test artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: e2e-report
-          path: |
-            playwright-report
-            test-results
-          if-no-files-found: warn
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 5
 
   status-comment:
     name: Status Comment
@@ -64,15 +88,32 @@ jobs:
       - lint
       - unit-test
       - e2e-test
-    if: ${{ success() }}
+    if: ${{ always() }}
+    env:
+      LINT_RESULT: ${{ needs.lint.result }}
+      UNIT_RESULT: ${{ needs.unit-test.result }}
+      E2E_RESULT: ${{ needs.e2e-test.result }}
     steps:
       - name: Comment on PR
         uses: actions/github-script@v8
         with:
           script: |
             const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+            const results = [
+              { label: "Lint", value: process.env.LINT_RESULT },
+              { label: "Unit tests", value: process.env.UNIT_RESULT },
+              { label: "E2E tests", value: process.env.E2E_RESULT }
+            ]
+            const statusLine = (value) => {
+              if (value === "success") return "✅ sukces"
+              if (value === "failure") return "❌ błąd"
+              if (value === "cancelled") return "⚠️ anulowane"
+              if (value === "skipped") return "⏭️ pominięte"
+              return `❔ ${value || "nieznany"}`
+            }
             const body = [
-              "✅ Lint, testy jednostkowe i e2e zakończone sukcesem.",
+              "Status workflow:",
+              ...results.map(({ label, value }) => `- ${label}: ${statusLine(value)}`),
               `Run: ${runUrl}`
             ].join("\\n")
             await github.rest.issues.createComment({
