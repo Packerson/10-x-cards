@@ -1,0 +1,66 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - link "Przejdź na stronę główną" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - text: 10x-cards
+        - generic [ref=e7]:
+          - navigation "Nawigacja" [ref=e8]:
+            - link "Generuj fiszki" [ref=e9] [cursor=pointer]:
+              - /url: /generate
+            - link "Moje fiszki" [ref=e10] [cursor=pointer]:
+              - /url: /cards
+            - generic "Wkrótce" [ref=e11]: Historia
+          - group [ref=e12]:
+            - generic "Menu użytkownika" [ref=e13] [cursor=pointer]:
+              - img [ref=e14]
+              - generic [ref=e17]: pawel.91.kaczm…
+    - main [ref=e18]:
+      - generic [ref=e20]:
+        - region "Narzędzia listy fiszek" [ref=e21]:
+          - generic [ref=e23]:
+            - heading "Moje fiszki" [level=1] [ref=e24]
+            - paragraph [ref=e25]: Wyszukuj i filtruj zapisane fiszki.
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - generic [ref=e28]: Szukaj po przodzie
+              - searchbox "Szukaj po przodzie" [ref=e29]
+            - generic [ref=e30]:
+              - text: Źródło
+              - combobox "Źródło" [ref=e31]:
+                - option "Wszystkie" [selected]
+                - option "manual"
+                - option "ai_created"
+                - option "ai_edited"
+            - generic [ref=e32]:
+              - text: Generacja
+              - combobox "Generacja" [ref=e33]:
+                - option "Wszystkie" [selected]
+                - option "#17 · 26.01.2026 · seed-1769416107733-93s9dc4a44g-aaaaaaaaa"
+            - button "Dodaj fiszkę" [ref=e35]
+        - generic [ref=e36]:
+          - generic [ref=e37]: Brak fiszek
+          - generic [ref=e38]: Zmień filtry lub dodaj nową fiszkę.
+          - button "Odśwież" [ref=e39]
+  - generic:
+    - region "Notifications alt+T"
+  - generic [ref=e42]:
+    - button "Menu" [ref=e43]:
+      - img [ref=e45]
+      - generic: Menu
+    - button "Inspect" [ref=e49]:
+      - img [ref=e51]
+      - generic: Inspect
+    - button "Audit" [ref=e53]:
+      - generic [ref=e54]:
+        - img [ref=e55]
+        - img [ref=e58]
+      - generic: Audit
+    - button "Settings" [ref=e61]:
+      - img [ref=e63]
+      - generic: Settings
+```
