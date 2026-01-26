@@ -1,0 +1,83 @@
+name: Test & Comment on Pull Request
+
+on:
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node
+        uses: ./.github/actions/setup-node
+      - name: Lint
+        run: npm run lint
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Setup Node
+        uses: ./.github/actions/setup-node
+      - name: Run unit tests with coverage
+        run: npm run test:unit:coverage
+      - name: Upload unit coverage
+        uses: actions/upload-artifact@v6
+        with:
+          name: unit-coverage
+          path: coverage
+          if-no-files-found: error
+
+  e2e-test:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    environment: integration
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      E2E_USERNAME_ID: ${{ secrets.E2E_USERNAME_ID }}
+      E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+    steps:
+      - name: Setup Node
+        uses: ./.github/actions/setup-node
+      - name: Install Playwright browsers
+        run: npm run test:e2e:install
+      - name: Run e2e tests
+        run: npm run test:e2e
+      - name: Upload e2e report
+        uses: actions/upload-artifact@v6
+        with:
+          name: e2e-report
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: warn
+
+  status-comment:
+    name: Status Comment
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - unit-test
+      - e2e-test
+    if: ${{ success() }}
+    steps:
+      - name: Comment on PR
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+            const body = [
+              "✅ Lint, testy jednostkowe i e2e zakończone sukcesem.",
+              `Run: ${runUrl}`
+            ].join("\\n")
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body
+            })
