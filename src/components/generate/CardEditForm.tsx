@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, type FormEvent } from "react";
+import { useState, useCallback, useEffect, useRef, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { CharacterCounter } from "./CharacterCounter";
 import type { CardEditFormProps } from "./types";
@@ -9,19 +9,23 @@ const MAX_BACK_LENGTH = 500;
 export function CardEditForm({ initialFront, initialBack, onSave, onCancel }: CardEditFormProps) {
   const [front, setFront] = useState(initialFront);
   const [back, setBack] = useState(initialBack);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const isFrontValid = front.trim().length > 0 && front.length <= MAX_FRONT_LENGTH;
   const isBackValid = back.trim().length > 0 && back.length <= MAX_BACK_LENGTH;
   const isValid = isFrontValid && isBackValid;
 
+  const handleSave = useCallback(() => {
+    if (!isValid) return;
+    onSave(front.trim(), back.trim());
+  }, [front, back, isValid, onSave]);
+
   const handleSubmit = useCallback(
     (e: FormEvent) => {
       e.preventDefault();
-      if (isValid) {
-        onSave(front.trim(), back.trim());
-      }
+      handleSave();
     },
-    [front, back, isValid, onSave]
+    [handleSave]
   );
 
   useEffect(() => {
@@ -34,8 +38,20 @@ export function CardEditForm({ initialFront, initialBack, onSave, onCancel }: Ca
     return () => document.removeEventListener("keydown", handleGlobalKeyDown);
   }, [onCancel]);
 
+  useEffect(() => {
+    const handleOutsidePointerDown = (event: MouseEvent) => {
+      const form = formRef.current;
+      if (!form) return;
+      if (form.contains(event.target as Node)) return;
+      handleSave();
+    };
+
+    document.addEventListener("mousedown", handleOutsidePointerDown);
+    return () => document.removeEventListener("mousedown", handleOutsidePointerDown);
+  }, [handleSave]);
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-3">
       <div className="space-y-1">
         <label htmlFor="edit-front" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Przód
