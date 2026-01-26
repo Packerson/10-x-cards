@@ -1,10 +1,125 @@
 ---
 import Layout from "@/layouts/Layout.astro"
+import SampleFlipCards from "@/components/sample/SampleFlipCards.astro"
+import { buttonVariants } from "@/components/ui/button"
+
+const { user, isAuthenticated } = Astro.locals as {
+  user?: {
+    id: string
+    email: string | null
+    display_name: string | null
+  }
+  isAuthenticated?: boolean
+}
 
 
 export const prerender = false
 ---
 
-<Layout>
-  
+<Layout title="Start | 10x Cards">
+  <section class="space-y-10 text-center">
+    
+    <header class="space-y-4">
+      <div class="mx-auto inline-flex items-center justify-center gap-2 rounded-full bg-card px-4 py-2 text-sm font-medium text-foreground">
+        <span class="wave-hand text-2xl" aria-hidden="true">👋</span>
+        <span>Cześć</span>
+      </div>
+      <h1 class="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+        Fiszki generowane z AI, szybciej niż kiedykolwiek
+      </h1>
+      <p class="mx-auto max-w-2xl text-base text-muted-foreground text-center">
+        Wklej dowolny tekst, a AI zaproponuje zestaw fiszek do akceptacji, edycji lub odrzucenia.
+        Możesz też ręcznie tworzyć i zarządzać swoimi fiszkami.
+      </p>
+      <p class="text-sm text-muted-foreground">
+        To MVP aplikacji — funkcje są rozwijane i mogą się zmieniać.
+      </p>
+    </header>
+
+    <section class="space-y-4">
+      <h2 class="text-lg font-semibold text-foreground">Szybki start</h2>
+      <div class="flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
+        {isAuthenticated ? (
+          <>
+            <a
+              href="/generate"
+              class={buttonVariants({ variant: "default", size: "lg", className: "w-full sm:w-auto" })}
+            >
+              Generuj fiszki
+            </a>
+            <a
+              href="/cards"
+              class={buttonVariants({ variant: "outline", size: "lg", className: "w-full sm:w-auto" })}
+            >
+              Przejdź do moich fiszek
+            </a>
+          </>
+        ) : (
+          <>
+            <a href="/auth/login" class={buttonVariants({ variant: "default", size: "lg" })}>
+              Zaloguj się
+            </a>
+            <a href="/auth/register" class={buttonVariants({ variant: "outline", size: "lg" })}>
+              Zarejestruj się
+            </a>
+          </>
+        )}
+      </div>
+    </section>
+
+    <section class="grid gap-4 sm:grid-cols-2">
+      <div class="rounded-lg border bg-card p-5 shadow-sm">
+        <h3 class="text-base font-semibold text-foreground">Co możesz zrobić teraz</h3>
+        <ul class="mt-3 space-y-2 text-sm text-muted-foreground">
+          <li>Wygenerować fiszki z tekstu i zapisać wybrane propozycje.</li>
+          <li>Ręcznie tworzyć, edytować i usuwać własne fiszki.</li>
+          <li>Wznawiać pracę nad listą fiszek w dowolnym momencie.</li>
+        </ul>
+      </div>
+      <div class="rounded-lg border bg-card p-5 shadow-sm">
+        <h3 class="text-base font-semibold text-foreground">Co jest w planach</h3>
+        <ul class="mt-3 space-y-2 text-sm text-muted-foreground">
+          <li>Talie i kategorie do porządkowania materiału.</li>
+          <li>Pomoc AI w generowaniu promptów do generowania fiszek.</li>
+          <li>Prosty tryb sesji nauki w MVP.</li>
+          <li>Pobieranie fiszek w formacie PDF.</li>
+          <li>Więcej statystyk i historii generowania.</li>
+        </ul>
+      </div>
+    </section>
+
+    <SampleFlipCards />
+  </section>
 </Layout>
+
+<style>
+  .wave-hand {
+    display: inline-block;
+    transform-origin: 70% 70%;
+    animation: wave 1.6s ease-in-out infinite;
+  }
+
+  @keyframes wave {
+    0% {
+      transform: rotate(0deg);
+    }
+    15% {
+      transform: rotate(14deg);
+    }
+    30% {
+      transform: rotate(-10deg);
+    }
+    45% {
+      transform: rotate(12deg);
+    }
+    60% {
+      transform: rotate(-8deg);
+    }
+    75% {
+      transform: rotate(6deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+</style>
