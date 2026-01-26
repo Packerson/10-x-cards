@@ -113,7 +113,7 @@ jobs:
             }
             const body = [
               "Status workflow:",
-              ...results.map(({ label, value }) => `- ${label}: ${statusLine(value)}`),
+              ...results.map(({ label, value }) => ` - ${label}: ${statusLine(value)}`),
               `Run: ${runUrl}`
             ].join("\\n")
             await github.rest.issues.createComment({

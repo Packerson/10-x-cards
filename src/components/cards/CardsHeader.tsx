@@ -1,19 +1,19 @@
-import type { CardSource } from "@/types"
-import type { GenerationOptionVM } from "./types"
-import { Button } from "@/components/ui/button"
+import type { CardSource } from "@/types";
+import type { GenerationOptionVM } from "./types";
+import { Button } from "@/components/ui/button";
 
 export interface CardsHeaderProps {
-  search: string
-  isBusy?: boolean
-  source?: CardSource
-  generationId?: number
-  generationOptions: GenerationOptionVM[]
-  isLoadingGenerations?: boolean
-  generationsError?: string | null
-  onSearchChange: (term: string) => void
-  onSourceChange: (source?: CardSource) => void
-  onGenerationIdChange: (generationId?: number) => void
-  onOpenCreateModal: () => void
+  search: string;
+  isBusy?: boolean;
+  source?: CardSource;
+  generationId?: number;
+  generationOptions: GenerationOptionVM[];
+  isLoadingGenerations?: boolean;
+  generationsError?: string | null;
+  onSearchChange: (term: string) => void;
+  onSourceChange: (source?: CardSource) => void;
+  onGenerationIdChange: (generationId?: number) => void;
+  onOpenCreateModal: () => void;
 }
 
 export function CardsHeader(props: CardsHeaderProps) {
@@ -29,16 +29,14 @@ export function CardsHeader(props: CardsHeaderProps) {
     onSourceChange,
     onGenerationIdChange,
     onOpenCreateModal,
-  } = props
+  } = props;
 
   return (
     <section aria-label="Narzędzia listy fiszek" className="mb-6 space-y-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Moje fiszki</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Wyszukuj i filtruj zapisane fiszki.
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">Wyszukuj i filtruj zapisane fiszki.</p>
         </div>
       </div>
 
@@ -77,8 +75,8 @@ export function CardsHeader(props: CardsHeaderProps) {
             value={generationId ?? ""}
             disabled={isBusy || isLoadingGenerations}
             onChange={(e) => {
-              const raw = e.target.value
-              onGenerationIdChange(raw ? Number(raw) : undefined)
+              const raw = e.target.value;
+              onGenerationIdChange(raw ? Number(raw) : undefined);
             }}
           >
             <option value="">Wszystkie</option>
@@ -110,6 +108,5 @@ export function CardsHeader(props: CardsHeaderProps) {
         </div>
       )}
     </section>
-  )
+  );
 }
-

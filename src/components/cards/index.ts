@@ -1,3 +1,2 @@
-export { CardsView } from "./CardsView"
-export { useCardsView } from "./useCardsView"
-
+export { CardsView } from "./CardsView";
+export { useCardsView } from "./useCardsView";

@@ -1,12 +1,12 @@
-import { z } from "zod"
+import { z } from "zod";
 
-const PASSWORD_MIN_LENGTH = 8
-const SPECIAL_CHAR_PATTERN = /[^A-Za-z0-9]/
+const PASSWORD_MIN_LENGTH = 8;
+const SPECIAL_CHAR_PATTERN = /[^A-Za-z0-9]/;
 
 export const authLoginSchema = z.object({
   email: z.string().trim().email({ message: "Podaj poprawny adres email." }),
   password: z.string().min(1, { message: "Hasło jest wymagane." }),
-})
+});
 
 export const authRegisterSchema = z
   .object({
@@ -24,11 +24,11 @@ export const authRegisterSchema = z
   .refine((values) => values.password === values.passwordConfirm, {
     path: ["passwordConfirm"],
     message: "Hasła muszą być zgodne.",
-  })
+  });
 
 export const authForgotPasswordSchema = z.object({
   email: z.string().trim().email({ message: "Podaj poprawny adres email." }),
-})
+});
 
 export const authResetPasswordSchema = z
   .object({
@@ -46,9 +46,9 @@ export const authResetPasswordSchema = z
   .refine((values) => values.newPassword === values.newPasswordConfirm, {
     path: ["newPasswordConfirm"],
     message: "Hasła muszą być zgodne.",
-  })
+  });
 
-export type AuthLoginInput = z.infer<typeof authLoginSchema>
-export type AuthRegisterInput = z.infer<typeof authRegisterSchema>
-export type AuthForgotPasswordInput = z.infer<typeof authForgotPasswordSchema>
-export type AuthResetPasswordInput = z.infer<typeof authResetPasswordSchema>
+export type AuthLoginInput = z.infer<typeof authLoginSchema>;
+export type AuthRegisterInput = z.infer<typeof authRegisterSchema>;
+export type AuthForgotPasswordInput = z.infer<typeof authForgotPasswordSchema>;
+export type AuthResetPasswordInput = z.infer<typeof authResetPasswordSchema>;

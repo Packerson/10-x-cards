@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button"
-import type { CardActionsProps } from "./types"
+import { Button } from "@/components/ui/button";
+import type { CardActionsProps } from "./types";
 
 export function CardActions({ status, onAccept, onEdit, onReject }: CardActionsProps) {
-  const isAccepted = status === "accepted"
-  const isRejected = status === "rejected"
+  const isAccepted = status === "accepted";
+  const isRejected = status === "rejected";
 
   return (
     <div className="flex items-center gap-2">
@@ -32,7 +32,12 @@ export function CardActions({ status, onAccept, onEdit, onReject }: CardActionsP
         data-testid="proposal-edit"
       >
         <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+          />
         </svg>
       </Button>
 
@@ -51,5 +56,5 @@ export function CardActions({ status, onAccept, onEdit, onReject }: CardActionsP
         </svg>
       </Button>
     </div>
-  )
+  );
 }

@@ -1,31 +1,26 @@
-import type { GetProfileDTO } from "@/types"
-import { ApiError, type ApiErrorResponse } from "./api-error"
+import type { GetProfileDTO } from "@/types";
+import { ApiError, type ApiErrorResponse } from "./api-error";
 
 export async function getProfile(): Promise<GetProfileDTO> {
-  let response: Response
+  let response: Response;
 
   try {
-    response = await fetch("/api/profile", { method: "GET" })
+    response = await fetch("/api/profile", { method: "GET" });
   } catch {
-    throw new ApiError(0, "network_error", "Brak połączenia z siecią")
+    throw new ApiError(0, "network_error", "Brak połączenia z siecią");
   }
 
   if (!response.ok) {
-    let errorBody: ApiErrorResponse
+    let errorBody: ApiErrorResponse;
 
     try {
-      errorBody = await response.json()
+      errorBody = await response.json();
     } catch {
-      throw new ApiError(
-        response.status,
-        "server_error",
-        "Nieoczekiwany błąd serwera"
-      )
+      throw new ApiError(response.status, "server_error", "Nieoczekiwany błąd serwera");
     }
 
-    throw ApiError.fromResponse(response.status, errorBody)
+    throw ApiError.fromResponse(response.status, errorBody);
   }
 
-  return response.json()
+  return response.json();
 }
-

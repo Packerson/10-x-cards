@@ -1,12 +1,12 @@
 ---
-import Layout from "@/layouts/Layout.astro"
-import { LoginForm } from "@/components/auth"
+import Layout from "@/layouts/Layout.astro";
+import { LoginForm } from "@/components/auth";
 
-export const prerender = false
+export const prerender = false;
 
-const { isAuthenticated } = Astro.locals
+const { isAuthenticated } = Astro.locals;
 if (isAuthenticated) {
-  return Astro.redirect("/")
+  return Astro.redirect("/");
 }
 ---
 

@@ -1,26 +1,26 @@
 ---
-import Layout from "@/layouts/Layout.astro"
-import SampleFlipCards from "@/components/sample/SampleFlipCards.astro"
-import { buttonVariants } from "@/components/ui/button"
+import Layout from "@/layouts/Layout.astro";
+import { SampleFlipCards } from "@/components/sample/SampleFlipCards";
+import { buttonVariants } from "@/components/ui/button";
 
-const { user, isAuthenticated } = Astro.locals as {
+const { isAuthenticated } = Astro.locals as {
   user?: {
-    id: string
-    email: string | null
-    display_name: string | null
-  }
-  isAuthenticated?: boolean
-}
+    id: string;
+    email: string | null;
+    display_name: string | null;
+  };
+  isAuthenticated?: boolean;
+};
 
-
-export const prerender = false
+export const prerender = false;
 ---
 
 <Layout title="Start | 10x Cards">
   <section class="space-y-10 text-center">
-    
     <header class="space-y-4">
-      <div class="mx-auto inline-flex items-center justify-center gap-2 rounded-full bg-card px-4 py-2 text-sm font-medium text-foreground">
+      <div
+        class="mx-auto inline-flex items-center justify-center gap-2 rounded-full bg-card px-4 py-2 text-sm font-medium text-foreground"
+      >
         <span class="wave-hand text-2xl" aria-hidden="true">👋</span>
         <span>Cześć</span>
       </div>
@@ -28,42 +28,42 @@ export const prerender = false
         Fiszki generowane z AI, szybciej niż kiedykolwiek
       </h1>
       <p class="mx-auto max-w-2xl text-base text-muted-foreground text-center">
-        Wklej dowolny tekst, a AI zaproponuje zestaw fiszek do akceptacji, edycji lub odrzucenia.
-        Możesz też ręcznie tworzyć i zarządzać swoimi fiszkami.
+        Wklej dowolny tekst, a AI zaproponuje zestaw fiszek do akceptacji, edycji lub odrzucenia. Możesz też ręcznie
+        tworzyć i zarządzać swoimi fiszkami.
       </p>
-      <p class="text-sm text-muted-foreground">
-        To MVP aplikacji — funkcje są rozwijane i mogą się zmieniać.
-      </p>
+      <p class="text-sm text-muted-foreground">To MVP aplikacji — funkcje są rozwijane i mogą się zmieniać.</p>
     </header>
 
     <section class="space-y-4">
       <h2 class="text-lg font-semibold text-foreground">Szybki start</h2>
       <div class="flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
-        {isAuthenticated ? (
-          <>
-            <a
-              href="/generate"
-              class={buttonVariants({ variant: "default", size: "lg", className: "w-full sm:w-auto" })}
-            >
-              Generuj fiszki
-            </a>
-            <a
-              href="/cards"
-              class={buttonVariants({ variant: "outline", size: "lg", className: "w-full sm:w-auto" })}
-            >
-              Przejdź do moich fiszek
-            </a>
-          </>
-        ) : (
-          <>
-            <a href="/auth/login" class={buttonVariants({ variant: "default", size: "lg" })}>
-              Zaloguj się
-            </a>
-            <a href="/auth/register" class={buttonVariants({ variant: "outline", size: "lg" })}>
-              Zarejestruj się
-            </a>
-          </>
-        )}
+        {
+          isAuthenticated ? (
+            <>
+              <a
+                href="/generate"
+                class={buttonVariants({ variant: "default", size: "lg", className: "w-full sm:w-auto" })}
+              >
+                Generuj fiszki
+              </a>
+              <a
+                href="/cards"
+                class={buttonVariants({ variant: "outline", size: "lg", className: "w-full sm:w-auto" })}
+              >
+                Przejdź do moich fiszek
+              </a>
+            </>
+          ) : (
+            <>
+              <a href="/auth/login" class={buttonVariants({ variant: "default", size: "lg" })}>
+                Zaloguj się
+              </a>
+              <a href="/auth/register" class={buttonVariants({ variant: "outline", size: "lg" })}>
+                Zarejestruj się
+              </a>
+            </>
+          )
+        }
       </div>
     </section>
 
@@ -88,7 +88,7 @@ export const prerender = false
       </div>
     </section>
 
-    <SampleFlipCards />
+    <SampleFlipCards client:load />
   </section>
 </Layout>
 

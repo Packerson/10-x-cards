@@ -1,12 +1,12 @@
 export interface InlineDeleteConfirmationProps {
-  isSubmitting?: boolean
-  error?: string | null
-  onConfirm: () => Promise<void>
-  onCancel: () => void
+  isSubmitting?: boolean;
+  error?: string | null;
+  onConfirm: () => Promise<void>;
+  onCancel: () => void;
 }
 
 export function InlineDeleteConfirmation(props: InlineDeleteConfirmationProps) {
-  const { isSubmitting, error, onConfirm, onCancel } = props
+  const { isSubmitting, error, onConfirm, onCancel } = props;
 
   return (
     <div
@@ -44,6 +44,5 @@ export function InlineDeleteConfirmation(props: InlineDeleteConfirmationProps) {
         </button>
       </div>
     </div>
-  )
+  );
 }
-

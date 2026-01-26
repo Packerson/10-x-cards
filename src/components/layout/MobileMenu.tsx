@@ -1,34 +1,30 @@
-import { useMemo, useRef } from "react"
-import { Menu } from "lucide-react"
+import { useMemo, useRef } from "react";
+import { Menu } from "lucide-react";
 
-import { NavLink } from "./NavLink"
-import { cn } from "@/lib/utils"
+import { NavLink } from "./NavLink";
+import { cn } from "@/lib/utils";
 
 export interface HeaderNavItem {
-  href: string
-  label: string
-  disabled?: boolean
-  testId?: string
+  href: string;
+  label: string;
+  disabled?: boolean;
+  testId?: string;
 }
 
 interface MobileMenuProps {
-  currentPath: string
-  navItems: HeaderNavItem[]
-  isAuthenticated: boolean
+  currentPath: string;
+  navItems: HeaderNavItem[];
+  isAuthenticated: boolean;
 }
 
-export function MobileMenu({
-  currentPath,
-  navItems,
-  isAuthenticated,
-}: MobileMenuProps) {
-  const detailsRef = useRef<HTMLDetailsElement | null>(null)
+export function MobileMenu({ currentPath, navItems, isAuthenticated }: MobileMenuProps) {
+  const detailsRef = useRef<HTMLDetailsElement | null>(null);
 
   const close = () => {
-    detailsRef.current?.removeAttribute("open")
-  }
+    detailsRef.current?.removeAttribute("open");
+  };
 
-  const items = useMemo(() => navItems, [navItems])
+  const items = useMemo(() => navItems, [navItems]);
 
   return (
     <details ref={detailsRef} className="relative md:hidden" data-testid="header-nav-mobile">
@@ -59,24 +55,14 @@ export function MobileMenu({
           {isAuthenticated && (
             <>
               <div className="my-1 h-px bg-border" />
-              <span
-                className="text-sm text-muted-foreground/70"
-                aria-disabled="true"
-                title="Wkrótce"
-              >
+              <span className="text-sm text-muted-foreground/70" aria-disabled="true" title="Wkrótce">
                 Mój profil
               </span>
-              <NavLink
-                href="/auth/logout"
-                label="Wyloguj"
-                currentPath={currentPath}
-                onNavigate={close}
-              />
+              <NavLink href="/auth/logout" label="Wyloguj" currentPath={currentPath} onNavigate={close} />
             </>
           )}
         </nav>
       </div>
     </details>
-  )
+  );
 }
-

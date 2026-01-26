@@ -1,6 +1,6 @@
-import { cleanup, render, screen } from "@testing-library/react"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { GenerateView } from "../GenerateView"
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { GenerateView } from "../GenerateView";
 
 /*
   Wyjaśnienie importów dla testów frontendowych:
@@ -19,26 +19,26 @@ import { GenerateView } from "../GenerateView"
   - Porządkują kształt danych zwracanych przez hook i przekazywanych do komponentów.
   - Ułatwiają czytelność testów i zapobiegają literówkom w nazwach pól.
 */
-type GenerateState = {
-  promptText: string
-  isGenerating: boolean
-  isSaving: boolean
-  error: null | { type: string; message: string }
-  generationId: string | null
-  proposals: unknown[]
+interface GenerateState {
+  promptText: string;
+  isGenerating: boolean;
+  isSaving: boolean;
+  error: null | { type: string; message: string };
+  generationId: string | null;
+  proposals: unknown[];
 }
 
-type GenerateHookReturn = {
-  state: GenerateState
-  isPromptValid: boolean
-  setPromptText: (value: string) => void
-  generateProposals: () => void
-  handleProposalAction: (...args: unknown[]) => void
-  handleProposalEdit: (...args: unknown[]) => void
-  handleBulkAction: (...args: unknown[]) => void
-  saveAcceptedCards: () => void
-  dismissError: () => void
-  retryLastAction: () => void
+interface GenerateHookReturn {
+  state: GenerateState;
+  isPromptValid: boolean;
+  setPromptText: (value: string) => void;
+  generateProposals: () => void;
+  handleProposalAction: (...args: unknown[]) => void;
+  handleProposalEdit: (...args: unknown[]) => void;
+  handleBulkAction: (...args: unknown[]) => void;
+  saveAcceptedCards: () => void;
+  dismissError: () => void;
+  retryLastAction: () => void;
 }
 
 /*
@@ -46,26 +46,26 @@ type GenerateHookReturn = {
   Dzięki temu reszta danych ma bezpieczne wartości domyślne.
 */
 type GenerateHookOverrides = Omit<Partial<GenerateHookReturn>, "state"> & {
-  state?: Partial<GenerateState>
-}
+  state?: Partial<GenerateState>;
+};
 
 /*
   Minimalne kontrakty propsów używane w mockach dzieci.
   Testujemy przekazywane dane, nie implementację tych komponentów.
 */
-type PromptFormProps = {
-  promptText: string
-  onPromptChange: (value: string) => void
-  onSubmit: () => void
-  isLoading: boolean
-  isDisabled: boolean
+interface PromptFormProps {
+  promptText: string;
+  onPromptChange: (value: string) => void;
+  onSubmit: () => void;
+  isLoading: boolean;
+  isDisabled: boolean;
 }
 
-type ErrorMessageProps = {
-  errorType: string
-  errorMessage: string
-  onRetry: () => void
-  onDismiss: () => void
+interface ErrorMessageProps {
+  errorType: string;
+  errorMessage: string;
+  onRetry: () => void;
+  onDismiss: () => void;
 }
 
 /*
@@ -73,33 +73,25 @@ type ErrorMessageProps = {
   - W testach jednostkowych izolujemy GenerateView od zależności.
   - Komponenty potomne zwracają proste elementy z data-testid.
 */
-type ProposalSectionProps = {
-  proposals: unknown[]
-  generationId: string
-  onProposalAction: (...args: unknown[]) => void
-  onProposalEdit: (...args: unknown[]) => void
-  onBulkAction: (...args: unknown[]) => void
-  onSave: () => void
-  isSaving: boolean
+interface ProposalSectionProps {
+  proposals: unknown[];
+  generationId: string;
+  onProposalAction: (...args: unknown[]) => void;
+  onProposalEdit: (...args: unknown[]) => void;
+  onBulkAction: (...args: unknown[]) => void;
+  onSave: () => void;
+  isSaving: boolean;
 }
 
 /*
   vi.hoisted zapewnia, że mocki są tworzone przed importami modułów.
   To ważne przy vi.mock(), bo fabryka uruchamia się przed importami.
 */
-const useGenerateFlashcardsMock = vi.hoisted(() => vi.fn())
-const promptFormMock = vi.hoisted(
-  () => vi.fn((_props: PromptFormProps) => <div data-testid="prompt-form" />)
-)
-const loadingOverlayMock = vi.hoisted(
-  () => vi.fn(() => <div data-testid="loading-overlay" />)
-)
-const errorMessageMock = vi.hoisted(
-  () => vi.fn((_props: ErrorMessageProps) => <div data-testid="error-message" />)
-)
-const proposalSectionMock = vi.hoisted(
-  () => vi.fn((_props: ProposalSectionProps) => <div data-testid="proposal-section" />)
-)
+const useGenerateFlashcardsMock = vi.hoisted(() => vi.fn());
+const promptFormMock = vi.hoisted(() => vi.fn(() => <div data-testid="prompt-form" />));
+const loadingOverlayMock = vi.hoisted(() => vi.fn(() => <div data-testid="loading-overlay" />));
+const errorMessageMock = vi.hoisted(() => vi.fn(() => <div data-testid="error-message" />));
+const proposalSectionMock = vi.hoisted(() => vi.fn(() => <div data-testid="proposal-section" />));
 
 /*
   Podmieniamy prawdziwe moduły na mocki:
@@ -107,12 +99,12 @@ const proposalSectionMock = vi.hoisted(
   - komponenty: sprawdzamy tylko czy i z jakimi propsami są renderowane
 */
 vi.mock("../useGenerateFlashcards", () => ({
-  useGenerateFlashcards: useGenerateFlashcardsMock
-}))
-vi.mock("../PromptForm", () => ({ PromptForm: promptFormMock }))
-vi.mock("../LoadingOverlay", () => ({ LoadingOverlay: loadingOverlayMock }))
-vi.mock("../ErrorMessage", () => ({ ErrorMessage: errorMessageMock }))
-vi.mock("../ProposalSection", () => ({ ProposalSection: proposalSectionMock }))
+  useGenerateFlashcards: useGenerateFlashcardsMock,
+}));
+vi.mock("../PromptForm", () => ({ PromptForm: promptFormMock }));
+vi.mock("../LoadingOverlay", () => ({ LoadingOverlay: loadingOverlayMock }));
+vi.mock("../ErrorMessage", () => ({ ErrorMessage: errorMessageMock }));
+vi.mock("../ProposalSection", () => ({ ProposalSection: proposalSectionMock }));
 
 /*
   Domyślny stan hooka.
@@ -124,19 +116,17 @@ const baseState: GenerateState = {
   isSaving: false,
   error: null,
   generationId: null,
-  proposals: []
-}
+  proposals: [],
+};
 
 /*
   Buduje pełny obiekt zwracany przez hook:
   - scala domyślny stan z nadpisaniami
   - wstrzykuje domyślne funkcje (vi.fn), które możemy asercjować
 */
-const createHookReturn = (
-  overrides: GenerateHookOverrides = {}
-): GenerateHookReturn => {
-  const { state: overrideState, ...restOverrides } = overrides
-  const state = { ...baseState, ...overrideState }
+const createHookReturn = (overrides: GenerateHookOverrides = {}): GenerateHookReturn => {
+  const { state: overrideState, ...restOverrides } = overrides;
+  const state = { ...baseState, ...overrideState };
 
   return {
     state,
@@ -149,125 +139,119 @@ const createHookReturn = (
     saveAcceptedCards: vi.fn(),
     dismissError: vi.fn(),
     retryLastAction: vi.fn(),
-    ...restOverrides
-  }
-}
+    ...restOverrides,
+  };
+};
 
 /*
   Ustawia zwracany stan hooka dla danego testu.
   To centralne miejsce do kontroli scenariusza renderu.
 */
 const setHookReturn = (overrides: GenerateHookOverrides = {}) => {
-  useGenerateFlashcardsMock.mockReturnValue(createHookReturn(overrides))
-}
+  useGenerateFlashcardsMock.mockReturnValue(createHookReturn(overrides));
+};
 
 describe("GenerateView", () => {
   beforeEach(() => {
     // Czyścimy wywołania mocków, aby testy były niezależne.
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
   afterEach(() => {
     // Usuwamy DOM po każdym teście.
-    cleanup()
-  })
+    cleanup();
+  });
 
   it("renders header and description", () => {
     // Stan domyślny: brak generowania, błędów i propozycji.
-    setHookReturn()
+    setHookReturn();
 
-    render(<GenerateView />)
+    render(<GenerateView />);
 
     // Sprawdzamy stałe treści nagłówka i opisu.
-    expect(
-      screen.getByRole("heading", { name: "Generuj fiszki" })
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        "Wklej tekst źródłowy, a AI wygeneruje propozycje fiszek do nauki."
-      )
-    ).toBeInTheDocument()
-  })
+    expect(screen.getByRole("heading", { name: "Generuj fiszki" })).toBeInTheDocument();
+    expect(screen.getByText("Wklej tekst źródłowy, a AI wygeneruje propozycje fiszek do nauki.")).toBeInTheDocument();
+  });
 
   it("renders LoadingOverlay when generating", () => {
     // W trybie generowania powinien pojawić się overlay ładowania.
-    setHookReturn({ state: { isGenerating: true } })
+    setHookReturn({ state: { isGenerating: true } });
 
-    render(<GenerateView />)
+    render(<GenerateView />);
 
-    expect(screen.getByTestId("loading-overlay")).toBeInTheDocument()
-  })
+    expect(screen.getByTestId("loading-overlay")).toBeInTheDocument();
+  });
 
   it("passes expected props to PromptForm", () => {
     // Sprawdzamy, czy GenerateView przekazuje poprawne propsy do PromptForm.
-    const setPromptText = vi.fn()
-    const generateProposals = vi.fn()
+    const setPromptText = vi.fn();
+    const generateProposals = vi.fn();
 
     setHookReturn({
       isPromptValid: false,
       setPromptText,
       generateProposals,
-      state: { promptText: "Tekst wejściowy", isGenerating: false }
-    })
+      state: { promptText: "Tekst wejściowy", isGenerating: false },
+    });
 
-    render(<GenerateView />)
+    render(<GenerateView />);
 
-    const [props] = promptFormMock.mock.calls[0] as [PromptFormProps]
+    const [props] = promptFormMock.mock.calls[0] as [PromptFormProps];
     // isDisabled powinno wynikać z niepoprawnego promptu.
     expect(props).toMatchObject({
       promptText: "Tekst wejściowy",
       onPromptChange: setPromptText,
       onSubmit: generateProposals,
       isLoading: false,
-      isDisabled: true
-    })
-  })
+      isDisabled: true,
+    });
+  });
 
   it("disables PromptForm when generating", () => {
     // Gdy trwa generowanie, formularz powinien być zablokowany.
     setHookReturn({
       isPromptValid: true,
-      state: { isGenerating: true }
-    })
+      state: { isGenerating: true },
+    });
 
-    render(<GenerateView />)
+    render(<GenerateView />);
 
-    const [props] = promptFormMock.mock.calls[0] as [PromptFormProps]
-    expect(props.isDisabled).toBe(true)
-    expect(props.isLoading).toBe(true)
-  })
+    const [props] = promptFormMock.mock.calls[0] as unknown as [PromptFormProps];
+    expect(props.isDisabled).toBe(true);
+    expect(props.isLoading).toBe(true);
+  });
 
   it("renders ErrorMessage when error exists", () => {
     // Jeśli hook zwraca błąd, wyświetlamy ErrorMessage z odpowiednimi handlerami.
-    const dismissError = vi.fn()
-    const retryLastAction = vi.fn()
+    const dismissError = vi.fn();
+    const retryLastAction = vi.fn();
 
     setHookReturn({
       dismissError,
       retryLastAction,
       state: {
-        error: { type: "network", message: "Nieudane żądanie" }
-      }
-    })
+        error: { type: "network", message: "Nieudane żądanie" },
+      },
+    });
 
-    render(<GenerateView />)
+    render(<GenerateView />);
 
-    const [props] = errorMessageMock.mock.calls[0] as [ErrorMessageProps]
+    const [props] = errorMessageMock.mock.calls[0] as unknown as [ErrorMessageProps];
     // Weryfikujemy mapowanie pola error -> propsy komponentu.
     expect(props).toMatchObject({
       errorType: "network",
       errorMessage: "Nieudane żądanie",
       onRetry: retryLastAction,
-      onDismiss: dismissError
-    })
-  })
+      onDismiss: dismissError,
+    });
+  });
 
   it("renders ProposalSection when proposals and generationId exist", () => {
     // Sekcja propozycji ma się pojawić tylko gdy są propozycje i generationId.
-    const proposals = [{ id: "p1" }]
-    const handleProposalAction = vi.fn()
-    const handleProposalEdit = vi.fn()
-    const handleBulkAction = vi.fn()
-    const saveAcceptedCards = vi.fn()
+    const proposals = [{ id: "p1" }];
+    const handleProposalAction = vi.fn();
+    const handleProposalEdit = vi.fn();
+    const handleBulkAction = vi.fn();
+    const saveAcceptedCards = vi.fn();
 
     setHookReturn({
       handleProposalAction,
@@ -277,13 +261,13 @@ describe("GenerateView", () => {
       state: {
         proposals,
         generationId: "gen-1",
-        isSaving: true
-      }
-    })
+        isSaving: true,
+      },
+    });
 
-    render(<GenerateView />)
+    render(<GenerateView />);
 
-    const [props] = proposalSectionMock.mock.calls[0] as [ProposalSectionProps]
+    const [props] = proposalSectionMock.mock.calls[0] as unknown as [ProposalSectionProps];
     // Weryfikujemy komplet przekazanych propsów i stan zapisu.
     expect(props).toMatchObject({
       proposals,
@@ -292,56 +276,52 @@ describe("GenerateView", () => {
       onProposalEdit: handleProposalEdit,
       onBulkAction: handleBulkAction,
       onSave: saveAcceptedCards,
-      isSaving: true
-    })
-  })
+      isSaving: true,
+    });
+  });
 
   it("does not render ProposalSection without generationId", () => {
     // Brak generationId powinien ukrywać sekcję propozycji.
     setHookReturn({
-      state: { proposals: [{ id: "p1" }], generationId: null }
-    })
+      state: { proposals: [{ id: "p1" }], generationId: null },
+    });
 
-    render(<GenerateView />)
+    render(<GenerateView />);
 
-    expect(screen.queryByTestId("proposal-section")).not.toBeInTheDocument()
-  })
+    expect(screen.queryByTestId("proposal-section")).not.toBeInTheDocument();
+  });
 
   it("renders empty state when no proposals, no error, not generating", () => {
     // Stan pusty jest widoczny, gdy nic nie generujemy i nie ma błędu.
     setHookReturn({
-      state: { proposals: [], isGenerating: false, error: null }
-    })
+      state: { proposals: [], isGenerating: false, error: null },
+    });
 
-    render(<GenerateView />)
+    render(<GenerateView />);
 
-    expect(screen.getByText("Brak propozycji")).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        'Wklej tekst powyżej i kliknij "Generuj fiszki", aby rozpocząć.'
-      )
-    ).toBeInTheDocument()
-  })
+    expect(screen.getByText("Brak propozycji")).toBeInTheDocument();
+    expect(screen.getByText('Wklej tekst powyżej i kliknij "Generuj fiszki", aby rozpocząć.')).toBeInTheDocument();
+  });
 
   it("does not render empty state when generating", () => {
     // W trakcie generowania nie pokazujemy stanu pustego.
     setHookReturn({
-      state: { proposals: [], isGenerating: true, error: null }
-    })
+      state: { proposals: [], isGenerating: true, error: null },
+    });
 
-    render(<GenerateView />)
+    render(<GenerateView />);
 
-    expect(screen.queryByText("Brak propozycji")).not.toBeInTheDocument()
-  })
+    expect(screen.queryByText("Brak propozycji")).not.toBeInTheDocument();
+  });
 
   it("does not render empty state when error exists", () => {
     // Gdy jest błąd, priorytet ma komunikat błędu, nie stan pusty.
     setHookReturn({
-      state: { proposals: [], isGenerating: false, error: { type: "x", message: "y" } }
-    })
+      state: { proposals: [], isGenerating: false, error: { type: "x", message: "y" } },
+    });
 
-    render(<GenerateView />)
+    render(<GenerateView />);
 
-    expect(screen.queryByText("Brak propozycji")).not.toBeInTheDocument()
-  })
-})
+    expect(screen.queryByText("Brak propozycji")).not.toBeInTheDocument();
+  });
+});

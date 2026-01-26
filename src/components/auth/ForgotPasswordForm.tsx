@@ -1,35 +1,35 @@
-import { useCallback, useId, useMemo, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { parseAuthErrorResponse } from "@/lib/api/auth-errors"
+import { useCallback, useId, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { parseAuthErrorResponse } from "@/lib/api/auth-errors";
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function validateEmail(value: string): string | null {
-  const trimmed = value.trim()
-  if (!trimmed) return "Email jest wymagany."
-  if (!EMAIL_PATTERN.test(trimmed)) return "Podaj poprawny adres email."
-  return null
+  const trimmed = value.trim();
+  if (!trimmed) return "Email jest wymagany.";
+  if (!EMAIL_PATTERN.test(trimmed)) return "Podaj poprawny adres email.";
+  return null;
 }
 
 export function ForgotPasswordForm() {
-  const emailId = useId()
-  const [email, setEmail] = useState("")
-  const [emailError, setEmailError] = useState<string | null>(null)
-  const [formError, setFormError] = useState<string | null>(null)
-  const [submitted, setSubmitted] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const emailId = useId();
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const canSubmit = useMemo(() => validateEmail(email) === null, [email])
+  const canSubmit = useMemo(() => validateEmail(email) === null, [email]);
 
   const handleSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault()
-      const nextEmailError = validateEmail(email)
-      setEmailError(nextEmailError)
-      setFormError(null)
-      if (nextEmailError) return
+      event.preventDefault();
+      const nextEmailError = validateEmail(email);
+      setEmailError(nextEmailError);
+      setFormError(null);
+      if (nextEmailError) return;
 
-      setIsSubmitting(true)
+      setIsSubmitting(true);
       try {
         const response = await fetch("/api/auth/forgot-password", {
           method: "POST",
@@ -37,41 +37,39 @@ export function ForgotPasswordForm() {
           body: JSON.stringify({
             email: email.trim(),
           }),
-        })
+        });
 
         if (!response.ok) {
-          const { errorCode, fieldErrors } = await parseAuthErrorResponse(response)
+          const { errorCode, fieldErrors } = await parseAuthErrorResponse(response);
           if (errorCode === "validation_error") {
             if (fieldErrors?.email?.[0]) {
-              setEmailError(fieldErrors.email[0])
+              setEmailError(fieldErrors.email[0]);
             } else {
-              const validation = validateEmail(email)
-              if (validation) setEmailError(validation)
+              const validation = validateEmail(email);
+              if (validation) setEmailError(validation);
             }
-            setFormError("Uzupełnij poprawnie wymagane pola.")
+            setFormError("Uzupełnij poprawnie wymagane pola.");
           } else {
-            setFormError("Nie udało się wysłać linku. Spróbuj ponownie.")
+            setFormError("Nie udało się wysłać linku. Spróbuj ponownie.");
           }
-          return
+          return;
         }
 
-        setSubmitted(true)
+        setSubmitted(true);
       } catch {
-        setFormError("Nie udało się połączyć z serwerem.")
+        setFormError("Nie udało się połączyć z serwerem.");
       } finally {
-        setIsSubmitting(false)
+        setIsSubmitting(false);
       }
     },
-    [email],
-  )
+    [email]
+  );
 
   return (
     <section className="mx-auto w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-sm">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Odzyskaj hasło</h1>
-        <p className="text-sm text-muted-foreground">
-          Podaj adres email, na który wyślemy link resetujący.
-        </p>
+        <p className="text-sm text-muted-foreground">Podaj adres email, na który wyślemy link resetujący.</p>
       </header>
 
       <form className="mt-6 space-y-4" onSubmit={handleSubmit} aria-busy={isSubmitting}>
@@ -88,10 +86,10 @@ export function ForgotPasswordForm() {
             placeholder="np. maria@domena.pl"
             value={email}
             onChange={(event) => {
-              setEmail(event.target.value)
-              setEmailError(null)
-              setSubmitted(false)
-              setFormError(null)
+              setEmail(event.target.value);
+              setEmailError(null);
+              setSubmitted(false);
+              setFormError(null);
             }}
             aria-invalid={Boolean(emailError)}
             aria-describedby={emailError ? `${emailId}-error` : undefined}
@@ -130,5 +128,5 @@ export function ForgotPasswordForm() {
         </a>
       </p>
     </section>
-  )
+  );
 }

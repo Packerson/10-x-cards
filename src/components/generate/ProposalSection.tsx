@@ -1,8 +1,8 @@
-import { useMemo } from "react"
-import { ProposalStats } from "./ProposalStats"
-import { ProposalList } from "./ProposalList"
-import { BulkActions } from "./BulkActions"
-import type { ProposalSectionProps } from "./types"
+import { useMemo } from "react";
+import { ProposalStats } from "./ProposalStats";
+import { ProposalList } from "./ProposalList";
+import { BulkActions } from "./BulkActions";
+import type { ProposalSectionProps } from "./types";
 
 export function ProposalSection({
   proposals,
@@ -13,50 +13,34 @@ export function ProposalSection({
   isSaving,
 }: ProposalSectionProps) {
   const stats = useMemo(() => {
-    const accepted = proposals.filter((p) => p.status === "accepted").length
-    const rejected = proposals.filter((p) => p.status === "rejected").length
-    const pending = proposals.filter((p) => p.status === "pending").length
+    const accepted = proposals.filter((p) => p.status === "accepted").length;
+    const rejected = proposals.filter((p) => p.status === "rejected").length;
+    const pending = proposals.filter((p) => p.status === "pending").length;
 
     return {
       total: proposals.length,
       accepted,
       rejected,
       pending,
-    }
-  }, [proposals])
+    };
+  }, [proposals]);
 
   if (proposals.length === 0) {
-    return null
+    return null;
   }
 
   return (
-    <section
-      className="space-y-6"
-      aria-labelledby="proposals-heading"
-      data-testid="proposal-section"
-    >
-      <div
-        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-        data-testid="proposal-header"
-      >
+    <section className="space-y-6" aria-labelledby="proposals-heading" data-testid="proposal-section">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between" data-testid="proposal-header">
         <h2 id="proposals-heading" className="text-xl font-semibold text-foreground">
           Propozycje fiszek
         </h2>
         <ProposalStats {...stats} />
       </div>
 
-      <BulkActions
-        acceptedCount={stats.accepted}
-        onBulkAction={onBulkAction}
-        onSave={onSave}
-        isSaving={isSaving}
-      />
+      <BulkActions acceptedCount={stats.accepted} onBulkAction={onBulkAction} onSave={onSave} isSaving={isSaving} />
 
-      <ProposalList
-        proposals={proposals}
-        onAction={onProposalAction}
-        onEdit={onProposalEdit}
-      />
+      <ProposalList proposals={proposals} onAction={onProposalAction} onEdit={onProposalEdit} />
     </section>
-  )
+  );
 }

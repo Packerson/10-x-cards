@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button"
-import type { ErrorMessageProps, GenerateErrorType } from "./types"
+import { Button } from "@/components/ui/button";
+import type { ErrorMessageProps, GenerateErrorType } from "./types";
 
 const ERROR_MESSAGES: Record<GenerateErrorType, string> = {
   validation_error: "Tekst musi mieć od 1000 do 10000 znaków.",
@@ -7,22 +7,13 @@ const ERROR_MESSAGES: Record<GenerateErrorType, string> = {
   server_error: "Wystąpił błąd serwera. Spróbuj ponownie później.",
   network_error: "Brak połączenia z siecią. Sprawdź połączenie i spróbuj ponownie.",
   save_error: "Nie udało się zapisać fiszek. Spróbuj ponownie.",
-}
+};
 
-const RETRYABLE_ERRORS: GenerateErrorType[] = [
-  "server_error",
-  "network_error",
-  "save_error",
-]
+const RETRYABLE_ERRORS: GenerateErrorType[] = ["server_error", "network_error", "save_error"];
 
-export function ErrorMessage({
-  errorType,
-  errorMessage,
-  onRetry,
-  onDismiss,
-}: ErrorMessageProps) {
-  const message = errorMessage || ERROR_MESSAGES[errorType]
-  const canRetry = RETRYABLE_ERRORS.includes(errorType) && onRetry
+export function ErrorMessage({ errorType, errorMessage, onRetry, onDismiss }: ErrorMessageProps) {
+  const message = errorMessage || ERROR_MESSAGES[errorType];
+  const canRetry = RETRYABLE_ERRORS.includes(errorType) && onRetry;
 
   return (
     <div
@@ -75,5 +66,5 @@ export function ErrorMessage({
         </div>
       )}
     </div>
-  )
+  );
 }

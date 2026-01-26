@@ -1,22 +1,20 @@
-import { FlashCard } from "./FlashCard"
-import type { CardVM } from "./types"
+import { FlashCard } from "./FlashCard";
+import type { CardVM } from "./types";
 
 export interface CardGridProps {
-  cards: CardVM[]
-  deleteState:
-    | null
-    | {
-        cardId: number
-        isSubmitting: boolean
-        error: string | null
-      }
-  onDeleteRequest: (cardId: number) => void
-  onDeleteCancel: () => void
-  onDeleteConfirm: () => Promise<void>
+  cards: CardVM[];
+  deleteState: null | {
+    cardId: number;
+    isSubmitting: boolean;
+    error: string | null;
+  };
+  onDeleteRequest: (cardId: number) => void;
+  onDeleteCancel: () => void;
+  onDeleteConfirm: () => Promise<void>;
 }
 
 export function CardGrid(props: CardGridProps) {
-  const { cards, deleteState, onDeleteRequest, onDeleteCancel, onDeleteConfirm } = props
+  const { cards, deleteState, onDeleteRequest, onDeleteCancel, onDeleteConfirm } = props;
 
   return (
     <section aria-label="Lista fiszek" className="mt-4" data-testid="cards-grid">
@@ -35,6 +33,5 @@ export function CardGrid(props: CardGridProps) {
         ))}
       </div>
     </section>
-  )
+  );
 }
-

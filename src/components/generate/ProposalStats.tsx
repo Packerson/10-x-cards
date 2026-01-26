@@ -1,4 +1,4 @@
-import type { ProposalStatsProps } from "./types"
+import type { ProposalStatsProps } from "./types";
 
 export function ProposalStats({ total, accepted, rejected, pending }: ProposalStatsProps) {
   return (
@@ -23,5 +23,5 @@ export function ProposalStats({ total, accepted, rejected, pending }: ProposalSt
         <span className="text-muted-foreground">oczekujących</span>
       </div>
     </div>
-  )
+  );
 }

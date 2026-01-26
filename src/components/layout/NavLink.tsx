@@ -1,19 +1,19 @@
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 interface NavLinkProps {
-  href: string
-  label: string
-  currentPath: string
-  exact?: boolean
-  onNavigate?: () => void
-  disabled?: boolean
-  testId?: string
+  href: string;
+  label: string;
+  currentPath: string;
+  exact?: boolean;
+  onNavigate?: () => void;
+  disabled?: boolean;
+  testId?: string;
 }
 
 function isActivePath(href: string, currentPath: string, exact: boolean): boolean {
-  if (exact) return currentPath === href
-  if (href === "/") return currentPath === "/"
-  return currentPath === href || currentPath.startsWith(`${href}/`)
+  if (exact) return currentPath === href;
+  if (href === "/") return currentPath === "/";
+  return currentPath === href || currentPath.startsWith(`${href}/`);
 }
 
 export function NavLink({
@@ -25,21 +25,19 @@ export function NavLink({
   disabled = false,
   testId,
 }: NavLinkProps) {
-  const isActive = isActivePath(href, currentPath, exact)
+  const isActive = isActivePath(href, currentPath, exact);
 
   if (disabled) {
     return (
       <span
         aria-disabled="true"
-        className={cn(
-          "cursor-not-allowed select-none text-sm font-medium text-muted-foreground/70"
-        )}
+        className={cn("cursor-not-allowed select-none text-sm font-medium text-muted-foreground/70")}
         title="Wkrótce"
         data-testid={testId}
       >
         {label}
       </span>
-    )
+    );
   }
 
   return (
@@ -55,6 +53,5 @@ export function NavLink({
     >
       {label}
     </a>
-  )
+  );
 }
-
