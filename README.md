@@ -1,4 +1,4 @@
-# 10x-cards
+# 10x-cards AI 
 
 [![version](https://img.shields.io/badge/version-0.0.1-blue.svg)](./package.json)
 [![node](https://img.shields.io/badge/node-22.14.0-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
