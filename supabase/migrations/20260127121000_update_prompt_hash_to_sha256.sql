@@ -3,6 +3,8 @@
 
 begin;
 
+create extension if not exists pgcrypto;
+
 drop trigger if exists trg_generations_set_prompt_hash on public.generations;
 drop function if exists public.tr_generations_set_prompt_hash();
 
@@ -10,13 +12,19 @@ alter table public.generations
   alter column prompt_hash type char(64);
 
 update public.generations
-set prompt_hash = encode(digest(trim(both from prompt_text), 'sha256'), 'hex');
+set prompt_hash = encode(
+  extensions.digest(convert_to(trim(both from prompt_text), 'UTF8'), 'sha256'),
+  'hex'
+);
 
 create or replace function public.tr_generations_set_prompt_hash()
 returns trigger language plpgsql as $$
 begin
   -- Przycięcie białych znaków oraz sha256() -> char(64)
-  new.prompt_hash := encode(digest(trim(both from new.prompt_text), 'sha256'), 'hex');
+  new.prompt_hash := encode(
+    extensions.digest(convert_to(trim(both from new.prompt_text), 'UTF8'), 'sha256'),
+    'hex'
+  );
   return new;
 end;$$;
 

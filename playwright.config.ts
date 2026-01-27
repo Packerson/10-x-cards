@@ -30,7 +30,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev -- --host",
+    command: "npm run dev:e2e -- --host",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
   },
