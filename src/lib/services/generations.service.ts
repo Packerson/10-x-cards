@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { SupabaseClient } from "../../db/supabase.client.ts";
 import type {
   CardProposalDTO,
@@ -83,7 +84,7 @@ export async function createGeneration(
   }
 
   const promptText = validation.data.prompt_text;
-  const promptHash = await createPromptHash(promptText);
+  const promptHash = createHash("md5").update(promptText).digest("hex");
 
   const { data: existing, error: findError } = await supabase
     .from("generations")
@@ -230,18 +231,6 @@ function normalizeCardProposals(cards: { front?: string; back?: string }[] | und
       source: "ai_created" as CardProposalDTO["source"],
     }))
     .filter((card) => card.front.length > 0 && card.back.length > 0);
-}
-
-async function createPromptHash(promptText: string): Promise<string> {
-  if (!globalThis.crypto?.subtle) {
-    throw new Error("crypto_subtle_unavailable");
-  }
-
-  const data = new TextEncoder().encode(promptText);
-  const digest = await globalThis.crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
 }
 
 function buildSystemPrompt(locale: UserLocale) {
