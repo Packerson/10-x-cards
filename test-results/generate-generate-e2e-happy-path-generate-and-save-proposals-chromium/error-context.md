@@ -1,0 +1,62 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - link "Przejdź na stronę główną" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - text: 10x-cards
+        - generic [ref=e7]:
+          - navigation "Nawigacja" [ref=e8]:
+            - link "Generuj fiszki" [ref=e9] [cursor=pointer]:
+              - /url: /generate
+            - link "Moje fiszki" [ref=e10] [cursor=pointer]:
+              - /url: /cards
+            - generic "Wkrótce" [ref=e11]: Historia
+          - group [ref=e12]:
+            - generic "Menu użytkownika" [ref=e13] [cursor=pointer]:
+              - img [ref=e14]
+              - generic [ref=e17]: pawel.91.kaczm…
+    - main [ref=e18]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - heading "Generuj fiszki" [level=1] [ref=e22]
+          - paragraph [ref=e23]: Wklej tekst źródłowy, a AI wygeneruje propozycje fiszek do nauki.
+        - generic [ref=e24]:
+          - region "Formularz generowania" [ref=e25]:
+            - heading "Formularz generowania" [level=2] [ref=e26]
+            - generic [ref=e27]:
+              - generic [ref=e28]:
+                - generic [ref=e29]: Tekst źródłowy
+                - textbox "Tekst źródłowy" [ref=e30]:
+                  - /placeholder: Wklej tekst, na podstawie którego wygeneruję fiszki (1000-10000 znaków)...
+                  - text: seed-1769545385789-wqmcz1zzjh-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                - generic [ref=e32]: 1000 / 10 000
+              - button "Generuj fiszki" [ref=e33]
+          - alert [ref=e34]:
+            - generic [ref=e35]:
+              - img [ref=e36]
+              - paragraph [ref=e39]: value too long for type character(32)
+              - button "Zamknij komunikat" [ref=e40]:
+                - img [ref=e41]
+            - button "Spróbuj ponownie" [ref=e44]
+  - generic:
+    - region "Notifications alt+T"
+  - generic [ref=e47]:
+    - button "Menu" [ref=e48]:
+      - img [ref=e50]
+      - generic: Menu
+    - button "Inspect" [ref=e54]:
+      - img [ref=e56]
+      - generic: Inspect
+    - button "Audit" [ref=e58]:
+      - generic [ref=e59]:
+        - img [ref=e60]
+        - img [ref=e63]
+      - generic: Audit
+    - button "Settings" [ref=e66]:
+      - img [ref=e68]
+      - generic: Settings
+```
