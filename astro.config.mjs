@@ -9,10 +9,11 @@ import tailwindcss from "@tailwindcss/vite";
 // https://astro.build/config
 export default defineConfig({
   output: "server",
+  site: "https://kaczmarek-dev.pl/",
   integrations: [react(), sitemap()],
   server: { port: 3000 },
   vite: {
     plugins: [tailwindcss()],
   },
-  adapter: cloudflare(),
+  adapter: cloudflare({ imageService: "compile" }),
 });
