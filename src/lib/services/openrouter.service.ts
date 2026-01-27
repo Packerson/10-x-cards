@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getSecret } from "astro:env/server";
 import type {
   ChatCompletionInput,
   OpenRouterCompletionDTO,
@@ -111,7 +112,7 @@ export class OpenRouterService {
   private _allowedModels: OpenRouterModel[];
 
   constructor(config: OpenRouterConfig = {}) {
-    const apiKey = config.apiKey ?? import.meta.env.OPENROUTER_API_KEY;
+    const apiKey = config.apiKey ?? getSecret("OPENROUTER_API_KEY") ?? import.meta.env.OPENROUTER_API_KEY;
     if (!apiKey) {
       throw new OpenRouterConfigError("Brak klucza OPENROUTER_API_KEY w konfiguracji.");
     }
