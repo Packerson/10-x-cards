@@ -245,7 +245,7 @@ async function createPromptHash(promptText: string): Promise<string> {
     throw new Error("crypto_subtle_unavailable");
   }
 
-  const data = new TextEncoder().encode(promptText);
+  const data = new TextEncoder().encode(promptText.trim());
   const digest = await globalThis.crypto.subtle.digest("SHA-256", data);
   return Array.from(new Uint8Array(digest))
     .map((byte) => byte.toString(16).padStart(2, "0"))
