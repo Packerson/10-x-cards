@@ -64,7 +64,8 @@ async function loginThroughUi(page: Page): Promise<void> {
   await login.goto();
   await login.form.waitFor();
   await login.login(email, password);
-  await page.waitForURL("/");
+  await page.waitForURL("/", { waitUntil: "domcontentloaded" });
+  await page.getByText("Cześć").waitFor({ state: "visible" });
 }
 
 test.describe.serial("generate e2e", () => {
