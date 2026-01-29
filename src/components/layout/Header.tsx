@@ -46,7 +46,13 @@ export function Header({ currentPath, initialIsAuthenticated, initialUser }: Hea
           aria-label="Przejdź na stronę główną"
           data-testid="header-logo"
         >
-          <img src="/logo_light.svg" alt="Braninlyx AI" className="h-14 w-auto drop-shadow-lg" width={720} height={260} />
+          <img
+            src="/logo_light.svg"
+            alt="Braninlyx AI"
+            className="h-14 w-auto drop-shadow-lg"
+            width={720}
+            height={260}
+          />
         </a>
 
         {/* Desktop */}
