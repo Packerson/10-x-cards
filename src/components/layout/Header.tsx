@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 
 import { useProfile } from "@/components/hooks/useProfile";
-import { cn } from "@/lib/utils";
 import { NavLink } from "./NavLink";
 import { MobileMenu, type HeaderNavItem } from "./MobileMenu";
 import { UserMenu } from "./UserMenu";
@@ -43,11 +42,11 @@ export function Header({ currentPath, initialIsAuthenticated, initialUser }: Hea
       <div className="container mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <a
           href="/"
-          className={cn("text-base font-semibold tracking-tight", "text-foreground hover:opacity-90")}
+          className="flex items-center text-foreground hover:opacity-90"
           aria-label="Przejdź na stronę główną"
           data-testid="header-logo"
         >
-          10x-cards
+          <img src="/logo_light.svg" alt="Braninlyx AI" className="h-14 w-auto drop-shadow-lg" width={720} height={260} />
         </a>
 
         {/* Desktop */}
